@@ -59,24 +59,7 @@ def get_plugin_configs(device, num_streams, num_threads):
     return config_user_specified
 
 
-def draw_detections(frame, detections, labels, threshold):
-    # TODO
-    size = frame.shape[:2]
 
-    with open(labels, 'r') as f:
-        classes_list = f.read().split('\n')
-    label_map = dict(enumerate(classes_list))
-
-    for detection in detections:
-        # If score more than threshold, draw rectangle on the frame
-        score = detection.score
-        if score > threshold:
-            cv2.rectangle(frame, (int(detection.xmin), int(detection.ymin)), (int(detection.xmax), int(detection.ymax)),
-                          (0, 255, 0), 1)
-            cv2.putText(frame, label_map[detection.id] + " " + "{:.4f}".format(score),
-                        (int(detection.xmin), int(detection.ymin)), cv2.FONT_HERSHEY_COMPLEX, 0.6, (0, 0, 255), 1)
-
-    return frame
 
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
@@ -94,7 +77,7 @@ def main():
     plugin_configs = get_plugin_configs('CPU', 0, 0)
 
 
-    
+
 
     # Destroy all windows
     cv2.destroyAllWindows()
