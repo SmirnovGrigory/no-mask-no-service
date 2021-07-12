@@ -2,15 +2,10 @@ import os
 import cv2
 import sys
 import argparse
-import numpy as np
 import logging as log
 from openvino.inference_engine import IENetwork, IECore
-
-sys.path.append(
-    'C:\\Program Files (x86)\\Intel\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\python')
-import models
-from pipelines import AsyncPipeline
-from images_capture import open_images_capture
+from Postprocessing import post_processing
+from ieclassifier import InferenceEngineClassifier
 
 
 def build_argparser():
@@ -33,55 +28,36 @@ def build_argparser():
     return parser
 
 
-def get_plugin_configs(device, num_streams, num_threads):
-    config_user_specified = {}
-
-    devices_nstreams = {}
-    if num_streams:
-        devices_nstreams = {device: num_streams for device in ['CPU', 'GPU'] if device in device} \
-            if num_streams.isdigit() \
-            else dict(device.split(':', 1) for device in num_streams.split(','))
-
-    if 'CPU' in device:
-        if num_threads is not None:
-            config_user_specified['CPU_THREADS_NUM'] = str(num_threads)
-        if 'CPU' in devices_nstreams:
-            config_user_specified['CPU_THROUGHPUT_STREAMS'] = devices_nstreams['CPU'] \
-                if int(devices_nstreams['CPU']) > 0 \
-                else 'CPU_THROUGHPUT_AUTO'
-
-    if 'GPU' in device:
-        if 'GPU' in devices_nstreams:
-            config_user_specified['GPU_THROUGHPUT_STREAMS'] = devices_nstreams['GPU'] \
-                if int(devices_nstreams['GPU']) > 0 \
-                else 'GPU_THROUGHPUT_AUTO'
-
-    return config_user_specified
-
-
-
-
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
     args = build_argparser().parse_args()
-    log.info("Start OpenVINO object detection")
 
-    # Initialize data input
-    cap = open_images_capture(args.input, True)
+    #log.info("Start IE classification sample")
 
-    # Initialize OpenVINO
-    ie = IECore()
+    log.basicConfig(format="[ %(levelname)s ] %(message)s",
+                    level=log.INFO, stream=sys.stdout)
+    args = build_argparser().parse_args()
+    log.info("Start IE classification sample")
+    ie_classifier = InferenceEngineClassifier(configPath=args.model,
+                                              weightsPath=args.weights,
+                                              device=args.device,
+                                              extension=args.cpu_extension,
+                                              classesPath=args.classes)
+    image = cv2.imread(args.input)
+    y_bboxes_output, y_cls_output = ie_classifier.classify(image)
+    #log.info(y_bboxes_output)
+    image = post_processing(image, y_bboxes_output, y_cls_output)
 
-    # Initialize Plugin configs
-    plugin_configs = get_plugin_configs('CPU', 0, 0)
-
-
-
-
-    # Destroy all windows
+    cv2.imshow("result", image)
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    # predictions = ie_classifier.get_top(prob, 5)
+    # log.info("Predictions: " + str(predictions))
+
     return
+
 
 if __name__ == '__main__':
     sys.exit(main())

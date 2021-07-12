@@ -1,0 +1,3 @@
+python main.py -m model-AIZOO\face_mask_detection.xml -w model-AIZOO\face_mask_detection.bin  -i images\1.png
+
+C:\Users\User\repos\CV-SUMMER-CAMP-2021\practice\openvino-virtual-environments\openvinoenv\Scripts\activate.bat
