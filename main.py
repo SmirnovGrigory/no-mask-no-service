@@ -52,7 +52,7 @@ def main():
     cv2.imshow("result", image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
+    cv2.imwrite('result_img1.jpg', image)
     # predictions = ie_classifier.get_top(prob, 5)
     # log.info("Predictions: " + str(predictions))
 
