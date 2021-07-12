@@ -4,7 +4,7 @@ import sys
 import argparse
 import logging as log
 from openvino.inference_engine import IENetwork, IECore
-from Postprocessing import post_processing
+from postprocessing import post_processing
 from ieclassifier import InferenceEngineClassifier
 
 
