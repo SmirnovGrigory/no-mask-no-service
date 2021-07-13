@@ -4,7 +4,7 @@ import sys
 import argparse
 import logging as log
 from openvino.inference_engine import IENetwork, IECore
-from Postprocessing import post_processing
+from postprocessing import post_processing
 from ieclassifier import InferenceEngineClassifier
 
 
@@ -52,7 +52,7 @@ def main():
     cv2.imshow("result", image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
+    cv2.imwrite('result_img1.jpg', image)
     # predictions = ie_classifier.get_top(prob, 5)
     # log.info("Predictions: " + str(predictions))
 
