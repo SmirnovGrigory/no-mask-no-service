@@ -47,7 +47,7 @@ def single_image_processing(ie_classifier, input_img):
 
 def image_capture_processing(ie_classifier, input_cap):
     cap = open_images_capture(input_cap, True)
-    output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 20, (1280, 720))
+    output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
     while True:
         image = cap.read()
 
@@ -61,6 +61,25 @@ def image_capture_processing(ie_classifier, input_cap):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+
+def camera_capture_processing(ie_classifier):
+    cap = cv2.VideoCapture(0)
+    # output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
+    if not cap.isOpened():
+        raise IOError("Cannot open webcam")
+    while True:
+        # image = cap.read()
+        ret, image = cap.read()
+        cv2.imshow("result", image)
+        y_bboxes_output, y_cls_output = ie_classifier.classify(image)
+        image = post_processing(image, y_bboxes_output, y_cls_output)
+
+        cv2.imshow("result", image)
+        # output.write(image)
+
+        # Wait 1 ms and check pressed button to break the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
@@ -76,6 +95,7 @@ def main():
 
     #single_image_processing(ie_classifier, args.input)
     image_capture_processing(ie_classifier, args.input)
+    #camera_capture_processing(ie_classifier)
     return
 
 
