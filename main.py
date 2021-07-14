@@ -9,7 +9,7 @@ from postprocessing import post_processing
 from ieclassifier import InferenceEngineClassifier
 
 sys.path.append(
-    'C:\\Program Files (x86)\\Intel\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\python')
+    'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
 from images_capture import open_images_capture
 
 
@@ -47,7 +47,7 @@ def single_image_processing(ie_classifier, input_img):
 
 def image_capture_processing(ie_classifier, input_cap):
     cap = open_images_capture(input_cap, True)
-    output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
+    output = cv2.VideoWriter('output_video.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
     while True:
         image = cap.read()
 
@@ -62,20 +62,24 @@ def image_capture_processing(ie_classifier, input_cap):
             break
 
 
-def camera_capture_processing(ie_classifier):
+def camera_capture_processing(ie_classifier, write_me=False):
     cap = cv2.VideoCapture(0)
-    # output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
+
+    output = None
+    if write_me:
+        output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
+
     while True:
-        # image = cap.read()
         ret, image = cap.read()
-        cv2.imshow("result", image)
+        cv2.imshow("Current frame", image)
         y_bboxes_output, y_cls_output = ie_classifier.classify(image)
         image = post_processing(image, y_bboxes_output, y_cls_output)
 
-        cv2.imshow("result", image)
-        # output.write(image)
+        cv2.imshow("Result frame", image)
+        if write_me:
+            output.write(image)
 
         # Wait 1 ms and check pressed button to break the loop
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -93,9 +97,14 @@ def main():
                                               extension=args.cpu_extension,
                                               classesPath=args.classes)
 
-    #single_image_processing(ie_classifier, args.input)
-    image_capture_processing(ie_classifier, args.input)
-    #camera_capture_processing(ie_classifier)
+    if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
+        single_image_processing(ie_classifier, args.input)
+    elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
+        image_capture_processing(ie_classifier, args.input)
+    elif 'cam' in args.input:
+        camera_capture_processing(ie_classifier)
+    else:
+        raise Exception('unknown input format')
     return
 
 
