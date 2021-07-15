@@ -85,6 +85,26 @@ def camera_capture_processing(ie_classifier, write_me=False):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+
+def face_detection(ie, input_cap):
+    cap = open_images_capture(input_cap, True)
+    while True:
+        image = cap.read()
+
+        detections = ie.detect(image)
+
+        for detection in detections:
+            if detection[2] > 0.5:
+                cv2.rectangle(image, (int(detection[3]), int(detection[4])),
+                              (int(detection[5]), int(detection[6])),
+                              (0, 255, 0), 1)
+        cv2.imshow("result", image)
+
+        # Wait 1 ms and check pressed button to break the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
@@ -97,15 +117,16 @@ def main():
                                               extension=args.cpu_extension,
                                               classesPath=args.classes)
 
-    if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
-        single_image_processing(ie_classifier, args.input)
-    elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
-        image_capture_processing(ie_classifier, args.input)
-    elif 'cam' in args.input:
-        camera_capture_processing(ie_classifier)
-    else:
-        raise Exception('unknown input format')
-    return
+    # if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
+    #     single_image_processing(ie_classifier, args.input)
+    # elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
+    #     image_capture_processing(ie_classifier, args.input)
+    # elif 'cam' in args.input:
+    #     camera_capture_processing(ie_classifier)
+    # else:
+    #     raise Exception('unknown input format')
+    # return
+    face_detection(ie_classifier, args.input)
 
 
 if __name__ == '__main__':

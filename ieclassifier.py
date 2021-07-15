@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 from openvino.inference_engine import IENetwork, IECore
 
+
 class InferenceEngineClassifier:
     def __init__(self, configPath=None, weightsPath=None,
                  device='CPU', extension=None, classesPath=None):
-
         # Add code for Inference Engine initialization
         self.ie = IECore()
 
@@ -33,6 +33,29 @@ class InferenceEngineClassifier:
 
         return image
 
+    def detect(self, image):
+        probabilities = None
+
+        input_blob = next(iter(self.net.inputs))
+        out_blob = next(iter(self.net.outputs))
+
+        n, c, h, w = self.net.inputs[input_blob].shape
+
+        image = self._prepare_image(image, h, w)
+        output = self.exec_net.infer(inputs={input_blob: image})
+
+        out = output['detection_out'][0]
+
+        width = 568
+        height = 320
+        for detection in out[0]:
+            detection[3] *= width
+            detection[4] *= height
+            detection[5] *= width
+            detection[6] *= height
+
+        return out[0]
+
     def classify(self, image):
         probabilities = None
 
@@ -45,4 +68,4 @@ class InferenceEngineClassifier:
         image = self._prepare_image(image, h, w)
         output = self.exec_net.infer(inputs={input_blob: image})
 
-        return ( output['loc_branch_concat'], output['cls_branch_concat'])
+        return (output['loc_branch_concat'], output['cls_branch_concat'])
