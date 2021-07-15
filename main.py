@@ -12,6 +12,8 @@ sys.path.append(
     'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
 from images_capture import open_images_capture
 
+id2class = {0: 'Mask', 1: 'NoMask'}
+colors = ((0, 255, 0), (255, 0, 0))
 
 def build_argparser():
     parser = argparse.ArgumentParser()
@@ -105,6 +107,38 @@ def face_detection(ie, input_cap):
             break
 
 
+def face_and_mask_detection_from_image_capture(ie_detector, ie_classifier, input_cap):
+    cap = open_images_capture(input_cap, True)
+    while True:
+        image = cap.read()
+
+        detections = ie_detector.detect(image)
+
+        for detection in detections:
+            if detection[2] > 0.5:
+                x_min = int(detection[3])
+                y_min = int(detection[4])
+                x_max = int(detection[5])
+                y_max = int(detection[6])
+                crop_image = image[y_min:y_max, x_min:x_max]
+
+                y_bboxes_output, y_cls_output = ie_classifier.classify(image)
+                pp_result = post_processing(image, y_bboxes_output, y_cls_output, draw_result=False)
+                if pp_result == -1:
+                    continue
+                else:
+                    class_id, confidence = pp_result
+                    cv2.rectangle(image, (x_min, y_min), (x_max, y_max), colors[class_id], 1)
+                    cv2.putText(image, "%s: %.2f" % (id2class[class_id], confidence), (x_min + 2, y_min - 2),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[class_id])
+
+        cv2.imshow("result", image)
+
+        # Wait 1 ms and check pressed button to break the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
@@ -117,6 +151,14 @@ def main():
                                               extension=args.cpu_extension,
                                               classesPath=args.classes)
 
+    ie_detector = InferenceEngineClassifier(configPath='intel\\face-detection-adas-0001\\FP16\\face-detection-adas'
+                                                       '-0001.xml',
+                                            weightsPath='intel\\face-detection-adas-0001\\FP16\\face-detection-adas'
+                                                        '-0001.bin',
+                                            device='CPU',
+                                            extension=None,
+                                            classesPath=None)
+
     # if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
     #     single_image_processing(ie_classifier, args.input)
     # elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
@@ -126,7 +168,8 @@ def main():
     # else:
     #     raise Exception('unknown input format')
     # return
-    face_detection(ie_classifier, args.input)
+
+    face_and_mask_detection_from_image_capture(ie_detector, ie_classifier, args.input)
 
 
 if __name__ == '__main__':

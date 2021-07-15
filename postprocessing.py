@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import logging as log
 
+
 def generate_anchors(feature_map_sizes, anchor_sizes, anchor_ratios, offset=0.5):
     """
     generate anchors.
@@ -59,7 +60,7 @@ def decode_bbox(anchors, raw_outputs, variances=[0.1, 0.1, 0.2, 0.2]):
     anchors_w = anchors[:, :, 2:3] - anchors[:, :, 0:1]
     anchors_h = anchors[:, :, 3:] - anchors[:, :, 1:2]
 
-    #log.info(raw_outputs)
+    # log.info(raw_outputs)
     raw_outputs_rescale = raw_outputs * np.array(variances)
     predict_center_x = raw_outputs_rescale[:, :, 0:1] * anchors_w + anchor_centers_x
     predict_center_y = raw_outputs_rescale[:, :, 1:2] * anchors_h + anchor_centers_y
@@ -173,4 +174,7 @@ def post_processing(image, y_bboxes_output, y_cls_output, conf_thresh=0.5, iou_t
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), colors[class_id], thickness=tl)
             cv2.putText(image, "%s: %.2f" % (id2class[class_id], conf), (xmin + 2, ymin - 2),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, colors[class_id])
-    return image
+            return image
+        else:
+            return (class_id, conf)
+    return -1
