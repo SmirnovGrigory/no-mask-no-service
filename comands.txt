@@ -1,9 +1,22 @@
 python main.py -m model-AIZOO\face_mask_detection.xml -w model-AIZOO\face_mask_detection.bin  -i images\1.png
 
-python main.py -m model-AIZOO\face_mask_detection.xml -w model-AIZOO\face_mask_detection.bin  -i videocam\videcam2.mov
+python main.py -m model-AIZOO\face_mask_detection.xml -w model-AIZOO\face_mask_detection.bin  -i videcam\videcam2.mov
 
 C:\Users\User\repos\CV-SUMMER-CAMP-2021\practice\openvino-virtual-environments\openvinoenv\Scripts\activate.bat
 
 mkdir openvino-virtual-environments && cd openvino-virtual-environments
 python -m venv openvinoenv
 
+python "C:\Program Files (x86)\Intel\openvino_2021.4.582\deployment_tools\tools\model_downloader\downloader.py" --name retinaface-resnet50-pytorch
+
+python object_detector.py -i videocam\videcam2.mov -m C:\Users\User\repos\no-mask-no-service\public\retinaface-resnet50-pytorch\FP32\retinaface-resnet50-pytorch.xml
+face-detection-retail-0044
+
+python "C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\tools\model_downloader\converter.py" --name face-detection-retail-0044 --download_dir C:\Users\User\repos\no-mask-no-service
+
+python main.py -i videocam\videcam2.mov -m C:\Users\User\repos\no-mask-no-service\public\face-detection-retail-0044\FP32\face-detection-retail-0044.xml -w C:\Users\User\repos\no-mask-no-service\public\face-detection-retail-0044\FP32\face-detection-retail-0044.bin
+
+
+python main.py -i videocam\videcam2.mov -m intel\face-detection-adas-0001\FP16\face-detection-adas-0001.xml -w intel\face-detection-adas-0001\FP16\face-detection-adas-0001.bin
+
+568x320

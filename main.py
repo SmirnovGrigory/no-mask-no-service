@@ -7,7 +7,7 @@ import time
 import pathlib
 from openvino.inference_engine import IENetwork, IECore
 from postprocessing import post_processing
-from ieclassifier import InferenceEngineClassifier
+from ieclassifier import InferenceEngineClassifier, check_min, check_max
 
 sys.path.append(
     'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
@@ -45,14 +45,24 @@ def draw_detections_1(frame, detections, labels, threshold):
         with open(labels, 'r') as f:
             classes_list = f.read().split('\n')
         label_map = dict(enumerate(classes_list))
-    size = frame.shape[:2]
+    width, height = frame.shape[:2]
     for detection in detections['detection_out'][0][0]:
 
         score = detection[2]
-        detection[3] *= size[1]
-        detection[4] *= size[0]
-        detection[5] *= size[1]
-        detection[6] *= size[0]
+        x_min *= width
+        y_min *= height
+        x_max *= width
+        y_max *= height
+        x_delta = x_max - x_min
+        y_delta = y_max - y_min
+        x_min -= (0.3 * x_delta)
+        y_min -= (0.3 * y_delta)
+        x_max += (0.3 * x_delta)
+        y_max += (0.3 * y_delta)
+        detection[3] = check_min(x_min)
+        detection[4] = check_min(y_min)
+        detection[5] = check_max(x_max, width)
+        detection[6] = check_max(y_max, height)
 
         # If score more than threshold, draw rectangle on the frame
         if score > threshold:
@@ -214,6 +224,24 @@ def get_plugin_configs(device, num_streams, num_threads):
 def input_transform(arg):
     return arg
 
+def face_detection(ie, input_cap):
+    cap = open_images_capture(input_cap, True)
+    while True:
+        image = cap.read()
+
+        detections = ie.detect(image)
+
+        for detection in detections:
+            if detection[2] > 0.5:
+                cv2.rectangle(image, (int(detection[3]), int(detection[4])),
+                              (int(detection[5]), int(detection[6])),
+                              (0, 255, 0), 1)
+        cv2.imshow("result", image)
+
+        # Wait 1 ms and check pressed button to break the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
@@ -250,6 +278,8 @@ def main():
         camera_capture_processing(detector_pipeline if in_model_api else ie_classifier, in_model_api=in_model_api)
     else:
         raise Exception('unknown input format')
+    
+    # face_detection(ie_classifier, args.input)
     return
 
 
