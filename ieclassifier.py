@@ -11,6 +11,7 @@ class InferenceEngineClassifier:
 
         # Add code for model loading
         self.net = self.ie.read_network(model=configPath)
+        self.xml = configPath
 
         # Add code for classes names loading
         self.exec_net = self.ie.load_network(network=self.net, device_name=device)
@@ -33,7 +34,7 @@ class InferenceEngineClassifier:
 
         return image
 
-    def classify(self, image):
+    def classify(self, image, aizoo=False):
         probabilities = None
 
         # Add code for image classification using Inference Engine
@@ -45,4 +46,7 @@ class InferenceEngineClassifier:
         image = self._prepare_image(image, h, w)
         output = self.exec_net.infer(inputs={input_blob: image})
 
-        return ( output['loc_branch_concat'], output['cls_branch_concat'])
+        if aizoo:
+            return (output['loc_branch_concat'], output['cls_branch_concat'])
+        else:
+            return output
