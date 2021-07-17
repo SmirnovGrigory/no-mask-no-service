@@ -7,7 +7,7 @@ import time
 import pathlib
 from openvino.inference_engine import IENetwork, IECore
 from postprocessing import post_processing
-from ieclassifier import InferenceEngineClassifier, check_min, check_max
+from ieclassifier import InferenceEngineClassifier, check_bounds
 
 sys.path.append(
     'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
@@ -15,6 +15,11 @@ import models
 from pipelines import AsyncPipeline
 from images_capture import open_images_capture
 
+def sign_case(case):
+    if case:
+        return 1
+    else:
+        return -1
 
 def draw_detections(frame, detections, labels, threshold):
 
@@ -45,33 +50,40 @@ def draw_detections_1(frame, detections, labels, threshold):
         with open(labels, 'r') as f:
             classes_list = f.read().split('\n')
         label_map = dict(enumerate(classes_list))
-    width, height = frame.shape[:2]
+    height, width = frame.shape[:2]
     for detection in detections['detection_out'][0][0]:
 
-        score = detection[2]
-        x_min *= width
-        y_min *= height
-        x_max *= width
-        y_max *= height
-        x_delta = x_max - x_min
-        y_delta = y_max - y_min
-        x_min -= (0.3 * x_delta)
-        y_min -= (0.3 * y_delta)
-        x_max += (0.3 * x_delta)
-        y_max += (0.3 * y_delta)
-        detection[3] = check_min(x_min)
-        detection[4] = check_min(y_min)
-        detection[5] = check_max(x_max, width)
-        detection[6] = check_max(y_max, height)
+        frame_data = dict()
+        feature_names = ['score', 'x_min', 'y_min', 'x_max', 'y_max']
+        for i in range(2, len(detection)):
+            frame_data[feature_names[i-2]] = detection[i] if i < 3 else detection[i] * (width if i % 2 == 1 else height)
+        # score = detection[2]
+        # x_min = detection[3] * width
+        # y_min = detection[4] * height
+        # x_max = detection[5] * width
+        # y_max = detection[6] * height
+        x_delta = frame_data['x_max'] - frame_data['x_min']
+        y_delta = frame_data['y_max'] - frame_data['y_min']
+        for i, feature in enumerate(['x_min','y_min','x_max','y_max']):
+            frame_data[feature] -= (1 if i < 2 else -1) * (0.3 * (x_delta if i % 2 == 0 else y_delta))
+            detection[i + 3] = check_bounds(frame_data[feature], max = ((width if i % 2 == 0 else height) if i > 1 else None))
+        # frame_data['x_min'] -= (0.3 * x_delta)
+        # frame_data['y_min'] -= (0.3 * y_delta)
+        # frame_data['x_max'] += (0.3 * x_delta)
+        # frame_data['y_max'] += (0.3 * y_delta)
+        # detection[3] = check_bounds(frame_data['x_min'])
+        # detection[4] = check_bounds(frame_data['y_min'])
+        # detection[5] = check_bounds(frame_data['x_max'], max=width)
+        # detection[6] = check_bounds(frame_data['y_max'], max=height)
 
         # If score more than threshold, draw rectangle on the frame
-        if score > threshold:
+        if frame_data['score'] > threshold:
             cv2.rectangle(frame, (int(detection[3]), int(detection[4])), (int(detection[5]), int(detection[6])), (0, 255, 0), 1)
             if labels:
                 pass
                 #cv2.putText(frame, f"Object {label_map[detection.id]} with {detection.score:.2f}", (int(detection.xmin), int(detection.ymin - 10)), cv2.FONT_HERSHEY_COMPLEX, 0.45, (0, 0, 255), 1)
             else:
-                cv2.putText(frame, f"Object with {score:.2f}",
+                cv2.putText(frame, f"Object with {frame_data['score']:.2f}",
                             (int(detection[3]), int(detection[4] - 10)), cv2.FONT_HERSHEY_COMPLEX, 0.45,
                             (0, 0, 255), 1)
 
@@ -223,24 +235,6 @@ def get_plugin_configs(device, num_streams, num_threads):
 
 def input_transform(arg):
     return arg
-
-def face_detection(ie, input_cap):
-    cap = open_images_capture(input_cap, True)
-    while True:
-        image = cap.read()
-
-        detections = ie.detect(image)
-
-        for detection in detections:
-            if detection[2] > 0.5:
-                cv2.rectangle(image, (int(detection[3]), int(detection[4])),
-                              (int(detection[5]), int(detection[6])),
-                              (0, 255, 0), 1)
-        cv2.imshow("result", image)
-
-        # Wait 1 ms and check pressed button to break the loop
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
 def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",

@@ -3,19 +3,13 @@ import numpy as np
 from openvino.inference_engine import IENetwork, IECore
 
 
-def check_min(n):
-    if n < 0:
-        return 0
+def check_bounds(n, min=0, max=None):
+    if min and n < min:
+        return min
+    elif max and n > max:
+        return max
     else:
         return n
-
-
-def check_max(n, maximum):
-    if n > maximum:
-        return maximum
-    else:
-        return n
-
 
 class InferenceEngineClassifier:
     def __init__(self, configPath=None, weightsPath=None,
@@ -47,39 +41,6 @@ class InferenceEngineClassifier:
         image = image.transpose((2, 0, 1))
 
         return image
-
-    def detect(self, image):
-        input_blob = next(iter(self.net.inputs))
-        out_blob = next(iter(self.net.outputs))
-
-        n, c, h, w = self.net.inputs[input_blob].shape
-
-        image = self._prepare_image(image, h, w)
-        output = self.exec_net.infer(inputs={input_blob: image})
-
-
-
-        out = output['detection_out'][0][0]
-
-        width = 568
-        height = 320
-        for detection in out:
-            x_min = detection[3] * width
-            y_min = detection[4] * height
-            x_max = detection[5] * width
-            y_max = detection[6] * height
-            x_delta = x_max - x_min
-            y_delta = y_max - y_min
-            x_min -= (0.3 * x_delta)
-            y_min -= (0.3 * y_delta)
-            x_max += (0.3 * x_delta)
-            y_max += (0.3 * y_delta)
-            detection[3] = check_min(x_min)
-            detection[4] = check_min(y_min)
-            detection[5] = check_max(x_max, width)
-            detection[6] = check_max(y_max, height)
-
-        return out
 
     def classify(self, image, aizoo=False):
         # Add code for image classification using Inference Engine
