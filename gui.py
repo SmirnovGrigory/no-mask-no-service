@@ -90,6 +90,7 @@ class Gui:
 
     def video_loop(self):
         """ Get frame from the video stream and show it in Tkinter """
+        start_time = time.time()  # start time of the loop
         ok, frame = self.vs.read()  # read frame from video stream
         frame = cv2.flip(frame, 1)
         if ok:  # frame captured without any errors
@@ -98,6 +99,7 @@ class Gui:
             imgtk = ImageTk.PhotoImage(image=self.current_image)  # convert image for tkinter
             self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
             self.panel.config(image=imgtk)  # show the image
+        print("FPS: ", 1.0 / (time.time() - start_time))
         self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
 
     # def take_snapshot(self):
