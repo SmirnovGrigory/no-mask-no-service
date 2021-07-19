@@ -1,6 +1,16 @@
 import cv2
 import numpy as np
 import logging as log
+from scipy.spatial.distance import cosine as cosine_distance
+
+def calc_features_similarity(feature1, feature2):
+    d = cosine_distance(list(feature1.values()), list(feature2.values()))
+    sim = 1 - d
+    if sim < 0:
+        sim = 0
+    assert 0 <= sim <= 1
+    return sim
+
 
 def generate_anchors(feature_map_sizes, anchor_sizes, anchor_ratios, offset=0.5):
     """
@@ -127,7 +137,6 @@ def single_class_non_max_suppression(bboxes, confidences, conf_thresh=0.2, iou_t
         idxs = np.delete(idxs, need_to_be_deleted_idx)
 
     # if the number of final bboxes is less than keep_top_k, we need to pad it.
-    # TODO
     return conf_keep_idx[pick]
 
 
@@ -147,7 +156,8 @@ id2class = {0: 'Mask', 1: 'NoMask'}
 colors = ((0, 255, 0), (255, 0, 0))
 
 
-def post_processing(image, y_bboxes_output, y_cls_output, conf_thresh=0.5, iou_thresh=0.4, draw_result=True):
+def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, iou_thresh=0.4, draw_result=True,
+                    resolution_net=None, just_pred=False, reid_net=None, reid_list=None):
     height, width, _ = image.shape
     y_bboxes = decode_bbox(anchors_exp, y_bboxes_output)[0]
     y_cls = y_cls_output[0]
@@ -160,17 +170,43 @@ def post_processing(image, y_bboxes_output, y_cls_output, conf_thresh=0.5, iou_t
                                                  iou_thresh=iou_thresh)
     # keep_idxs  = cv2.dnn.NMSBoxes(y_bboxes.tolist(), bbox_max_scores.tolist(), conf_thresh, iou_thresh)[:,0]
     tl = round(0.002 * (height + width) * 0.5) + 1  # line thickness
+    best_pred = {'score':0, 'pred':'NoMask'}
     for idx in keep_idxs:
         conf = float(bbox_max_scores[idx])
         class_id = bbox_max_score_classes[idx]
+        prediction = id2class[class_id]
+
+        if just_pred and conf > best_pred['score']:
+            best_pred['score'] = conf
+            best_pred['pred'] = prediction
         bbox = y_bboxes[idx]
         # clip the coordinate, avoid the value exceed the image boundary.
         xmin = max(0, int(bbox[0] * width))
         ymin = max(0, int(bbox[1] * height))
         xmax = min(int(bbox[2] * width), width)
         ymax = min(int(bbox[3] * height), height)
+
+        face_image = image[int(ymin):int(ymax),
+                     int(xmin):int(xmax)]
+
+        if reid_net is not None and reid_list is not None:
+            out = reid_net.detect(face_image)
+            for id in reid_list:
+                if calc_features_similarity(out, id['vals']) < 0.99:
+                    break
+            else:
+                reid_list.append({'pred':prediction, 'vals':out})
+        elif reid_list:
+            reid_list.append({'pred':prediction, 'vals':(conf, xmin, ymin, xmax, ymax)})
+        else:
+            reid_list = [{'pred':prediction, 'vals':(conf, xmin, ymin, xmax, ymax)}]
+
         if draw_result:
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), colors[class_id], thickness=tl)
-            cv2.putText(image, "%s: %.2f" % (id2class[class_id], conf), (xmin + 2, ymin - 2),
+            cv2.putText(image, "%s: %.2f" % (prediction, conf), (xmin + 2, ymin - 2),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, colors[class_id])
-    return image
+
+    if just_pred:
+        return (best_pred, reid_list)
+    else:
+        return (image, reid_list)
