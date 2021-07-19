@@ -170,6 +170,8 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
                                                  iou_thresh=iou_thresh)
     # keep_idxs  = cv2.dnn.NMSBoxes(y_bboxes.tolist(), bbox_max_scores.tolist(), conf_thresh, iou_thresh)[:,0]
     tl = round(0.002 * (height + width) * 0.5) + 1  # line thickness
+    count_mask = 0
+    count_no_mask = 0
     best_pred = {'score':0, 'pred':'NoMask'}
     for idx in keep_idxs:
         conf = float(bbox_max_scores[idx])
@@ -179,6 +181,7 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
         if just_pred and conf > best_pred['score']:
             best_pred['score'] = conf
             best_pred['pred'] = prediction
+
         bbox = y_bboxes[idx]
         # clip the coordinate, avoid the value exceed the image boundary.
         xmin = max(0, int(bbox[0] * width))
@@ -205,8 +208,13 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), colors[class_id], thickness=tl)
             cv2.putText(image, "%s: %.2f" % (prediction, conf), (xmin + 2, ymin - 2),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, colors[class_id])
-
     if just_pred:
         return (best_pred, reid_list)
     else:
         return (image, reid_list)
+    
+    # text = 'With masks: ' + str(count_mask) + '    Without masks: ' + str(count_no_mask)
+    # textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 3)[0]
+    # X = (image.shape[1] - textsize[0]) // 2
+    # cv2.putText(image, text, (X, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 3)
+    # return image
