@@ -7,6 +7,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 import argparse
+import time
 
 sys.path.append(
     'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
@@ -37,29 +38,50 @@ class Gui:
         # btn.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Slider window (slider controls stage position)
-        self.sliderFrame = tk.Frame(self.root, width=600, height=100)
+        self.sliderFrame = tk.Frame(self.root, width=600, height=150)
         self.sliderFrame.pack(padx=10, pady=2)
 
+        self.networkLabel = tk.Label(self.sliderFrame, text='network mode')
         self.mainMode = ttk.Combobox(self.sliderFrame,
                                      values=[
                                          "Aizoo",
                                          "face detector",
                                          "detector + Aizoo"])
+        self.reLabel = tk.Label(self.sliderFrame, text='re-identidication mode')
         self.re_identificationMode = ttk.Combobox(self.sliderFrame,
                                                   values=[
                                                       "re-identification",
                                                       "no re-identification"])
+        self.deviceLabel = tk.Label(self.sliderFrame, text='device mode')
         self.deviceMode = ttk.Combobox(self.sliderFrame,
                                        values=[
                                            "CPU",
                                            "GPU",
                                            "HETERO"])
-        self.aizoo_threshold = tk.Entry(self.sliderFrame, width=30, text='Aizoo threshold')
+
+        self.atrashLabel = tk.Label(self.sliderFrame, text='Aizoo threshold')
+        self.aizooThreshold = tk.Entry(self.sliderFrame, width=40, text='Aizoo threshold')
+        self.dtrashLabel = tk.Label(self.sliderFrame, text='detector threshold')
+        self.detectorThreshold = tk.Entry(self.sliderFrame, width=40, text='detector threshold')
+        self.rtrashLabel = tk.Label(self.sliderFrame, text='re-identification threshold')
+        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=40, text='re-identification threshold')
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="blue", text="Start")
 
+        self.networkLabel.pack()
         self.mainMode.pack()
-        
+        self.reLabel.pack()
+        self.re_identificationMode.pack()
+        self.deviceLabel.pack()
+        self.deviceMode.pack()
+
+        self.atrashLabel.pack()
+        self.aizooThreshold.pack()
+        self.dtrashLabel.pack()
+        self.detectorThreshold.pack()
+        self.rtrashLabel.pack()
+        self.re_identificationThreshold.pack()
+
         self.startButton.pack()
 
         # start a self.video_loop that constantly pools the video sensor
