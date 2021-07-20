@@ -24,7 +24,7 @@ def sign_case(case):
         return -1
 
 
-def draw_detections(frame, detections, labels, threshold, *, draw_result=False, resolution_net=None, mask_net=None,
+def draw_detections(frame, detections, labels, threshold, *, draw_result=False, mask_net=None,
                     reid_list=None, reid_net=None):
     label_map = None
     if labels:
@@ -88,7 +88,7 @@ def draw_detections(frame, detections, labels, threshold, *, draw_result=False, 
 
 
 def draw_detections_with_postprocessing(frame, detections, labels, threshold, *, draw_result=False, reid_list=None, reid_net=None,
-                                        resolution_net=None, mask_net=None):
+                                        mask_net=None):
     label_map = None
     if labels:
         with open(labels, 'r') as f:
@@ -140,10 +140,6 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
             elif mask_net is None:
                 reid_list = [detection]
 
-            if resolution_net is not None:
-                frame = next(iter(resolution_net.expand_resolution(frame, frame).values()))[0]
-                frame = frame.transpose((1, 2, 0))
-
             pred = None
             if mask_net is not None:
                 y_bboxes_output, y_cls_output = mask_net.detect(face_image, aizoo=True)
@@ -194,12 +190,6 @@ def single_image_processing(detector, image_path, in_model_api=False,
 
     image = cv2.imread(image_path)
 
-    if resolution == 'all' and resolution_net is not None:
-        old_height, old_width = image.shape[:2]
-        image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
-        image = image.transpose((1, 2, 0))
-        #image = cv2.resize(image, (old_width, old_height), cv2.INTER_AREA)
-
     if in_model_api:
         frame_id = 0
         detector.submit_data(image, frame_id, {'frame': image, 'start_time': 0})
@@ -220,8 +210,11 @@ def single_image_processing(detector, image_path, in_model_api=False,
             reid_list = draw_detections_with_postprocessing(image, output, None, 0.3, reid_list=reid_list,
                                                                 reid_net=reid_net, draw_result=True, mask_net=mask_net)
 
-    if resolution == 'all' and resolution_net is not None:
-        image = cv2.resize(image, (old_width, old_height), cv2.INTER_AREA)
+    if resolution == 'hd' and resolution_net is not None:
+        height, width = image.shape[:2]
+        image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
+        image = image.transpose((1, 2, 0))
+        #image = cv2.resize(image, (width, height), cv2.INTER_AREA)
 
     cv2.imshow("result", image)
     cv2.waitKey(0)
@@ -300,10 +293,6 @@ def video_processing(detector, input_cap=None, in_model_api=False,
         else:
             ret, image = cap.read()
 
-        if resolution == 'all' and resolution_net is not None:
-            image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
-            image = image.transpose((1, 2, 0))
-
         if in_model_api:
             frame_id = 0
             detector.submit_data(image, frame_id, {'frame': image, 'start_time': 0})
@@ -321,11 +310,15 @@ def video_processing(detector, input_cap=None, in_model_api=False,
                                                                 reid_net=reid_net)
             else:
                 output = detector.detect(image)
-                reid_list = draw_detections_with_postprocessing(image, output, None, 0.3, reid_list=reid_list,
+                reid_list = draw_detections_with_postprocessing(image, output, None, 0.8, reid_list=reid_list,
                                                                 reid_net=reid_net, draw_result=True, mask_net=mask_net)
 
-        if resolution == 'all' and resolution_net is not None:
-            image = cv2.resize(image, (1280, 720), cv2.INTER_AREA)
+        if resolution == 'hd' and resolution_net is not None:
+            height, width = image.shape[:2]
+            image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
+            image = image.transpose((1, 2, 0))
+            #image = cv2.resize(image, (width, height), cv2.INTER_AREA)
+
         cv2.imshow("Result frame", image)
 
         if write_me:
@@ -423,13 +416,13 @@ def main():
 
     if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
         single_image_processing(detector, args.input, in_model_api=in_model_api,
-                                reid_list=reidentification_list, resolution='None',
+                                reid_list=reidentification_list, resolution='hd',
                                 resolution_net=resolutioner, mask_net=mask_detector,
                                 reid_net=reidentificator)
     elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
         video_processing(detector, args.input, in_model_api=in_model_api,
                          reid_list=reidentification_list, resolution='None',
-                         resolution_net=resolutioner, mask_net=None,
+                         resolution_net=resolutioner, mask_net=mask_detector,
                          reid_net=reidentificator)
     elif 'cam' in args.input:
         video_processing(detector, in_model_api=in_model_api,

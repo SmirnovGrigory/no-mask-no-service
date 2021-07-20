@@ -157,7 +157,7 @@ colors = ((0, 255, 0), (255, 0, 0))
 
 
 def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, iou_thresh=0.4, draw_result=True,
-                    resolution_net=None, just_pred=False, reid_net=None, reid_list=None):
+                    just_pred=False, reid_net=None, reid_list=None):
     height, width, _ = image.shape
     y_bboxes = decode_bbox(anchors_exp, y_bboxes_output)[0]
     y_cls = y_cls_output[0]
