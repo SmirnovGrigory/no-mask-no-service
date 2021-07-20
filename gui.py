@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
+import logging as log
 import argparse
 import time
 
@@ -20,8 +21,10 @@ class Gui:
             a video stream in a Tkinter window and stores current snapshot on disk """
         if camera:
             self.vs = cv2.VideoCapture(0)
+            self.camera = True
         else:
             self.vs = open_images_capture(input_cap, True)
+            self.camera = False
 
         self.current_image = None  # current image from the camera
 
@@ -91,8 +94,14 @@ class Gui:
     def video_loop(self):
         """ Get frame from the video stream and show it in Tkinter """
         start_time = time.time()  # start time of the loop
-        ok, frame = self.vs.read()  # read frame from video stream
-        frame = cv2.flip(frame, 1)
+        ok, frame = 0, 0
+        if self.camera:
+            ok, frame = self.vs.read()  # read frame from video stream
+            frame = cv2.flip(frame, 1)
+        else:
+            frame = self.vs.read()
+            ok = True
+
         if ok:  # frame captured without any errors
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)  # convert colors from BGR to RGBA
             self.current_image = Image.fromarray(cv2image)  # convert image for PIL
@@ -112,19 +121,23 @@ class Gui:
 
     def destructor(self):
         """ Destroy the root object and release all resources """
-        print("[INFO] closing...")
+        # print("[INFO] closing...")
+        log.info("closing...")
         self.root.destroy()
         self.vs.release()  # release web camera
         cv2.destroyAllWindows()  # it is not mandatory in this application
 
 
 # construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-o", "--output", default="./",
-                help="path to output directory to store snapshots (default: current folder")
-args = vars(ap.parse_args())
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-o", "--output", default="./",
+#                 help="path to output directory to store snapshots (default: current folder")
+# args = vars(ap.parse_args())
 
+
+log.basicConfig(format="[ %(levelname)s ] %(message)s",
+                    level=log.INFO, stream=sys.stdout)
 # start the app
-print("[INFO] starting...")
-pba = Gui(args["output"], camera=True)
+log.info("starting...")
+pba = Gui("videocam\\videcam2.mov", camera=False)
 pba.root.mainloop()
