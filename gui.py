@@ -10,8 +10,7 @@ import logging as log
 import argparse
 import time
 
-sys.path.append(
-    'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
+sys.path.append('C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
 from images_capture import open_images_capture
 
 
@@ -32,6 +31,43 @@ class Gui:
         self.root.title("no-mask-no-service")  # set window title
         # self.destructor function gets fired when the window is closed
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
+        self.root.geometry("1152x630")
+        self.root.configure(bg="#E5E1D8")
+
+        canvas = tk.Canvas(
+            self.root,
+            bg="#E5E1D8",
+            height=700,
+            width=1152,
+            bd=0,
+            highlightthickness=0,
+            relief="ridge"
+        )
+        canvas.place(x=0, y=0)
+
+        canvas.create_rectangle(
+            0.0,
+            0.0,
+            815.0,
+            700.0,
+            fill="#C4C4C4",
+            outline="")
+
+        canvas.create_text(
+            390.0,
+            44.0,
+            text="Video",
+            fill="#645F5F",
+            font=('Georgia', int(48.0))
+        )
+
+        canvas.create_text(
+            990.0,
+            44.0,
+            text="Settings",
+            fill="#645F5F",
+            font=('Georgia', int(48.0))
+        )
 
         self.panel = tk.Label(self.root)  # initialize image panel
         self.panel.pack(side=tk.LEFT)
@@ -41,41 +77,42 @@ class Gui:
         # btn.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Slider window (slider controls stage position)
-        self.sliderFrame = tk.Frame(self.root, width=600, height=150)
-        self.sliderFrame.pack(padx=10, pady=2)
+        self.sliderFrame = tk.Frame(self.root)
+        self.sliderFrame.pack(side=tk.RIGHT, padx=55, pady=100)
 
-        self.networkLabel = tk.Label(self.sliderFrame, text='network mode')
+        self.networkLabel = tk.Label(self.sliderFrame, text='Network Mode')
         self.mainMode = ttk.Combobox(self.sliderFrame,
                                      values=[
-                                         "Aizoo",
-                                         "face detector",
-                                         "detector + Aizoo"])
-        self.reLabel = tk.Label(self.sliderFrame, text='re-identidication mode')
+                                         "AIZOO",
+                                         "Face Detector",
+                                         "Face Detector + AIZOO"])
+        self.reLabel = tk.Label(self.sliderFrame, text='Re-Identification Mode')
         self.re_identificationMode = ttk.Combobox(self.sliderFrame,
                                                   values=[
-                                                      "re-identification",
-                                                      "no re-identification"])
-        self.deviceLabel = tk.Label(self.sliderFrame, text='device mode')
+                                                      "Re-Identification On",
+                                                      "Re-Identification Off"])
+        self.deviceLabel = tk.Label(self.sliderFrame, text='Device Mode')
         self.deviceMode = ttk.Combobox(self.sliderFrame,
                                        values=[
                                            "CPU",
                                            "GPU",
                                            "HETERO"])
 
-        self.atrashLabel = tk.Label(self.sliderFrame, text='Aizoo threshold')
-        self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='Aizoo threshold')
-        self.dtrashLabel = tk.Label(self.sliderFrame, text='detector threshold')
-        self.detectorThreshold = tk.Entry(self.sliderFrame, width=23, text='detector threshold')
-        self.rtrashLabel = tk.Label(self.sliderFrame, text='re-identification threshold')
-        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23, text='re-identification threshold')
+        self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
+        self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
+        self.dtrashLabel = tk.Label(self.sliderFrame, text='Face Detector threshold')
+        self.detectorThreshold = tk.Entry(self.sliderFrame, width=23, text='Face Detector threshold')
+        self.rtrashLabel = tk.Label(self.sliderFrame, text='Re-Identification threshold')
+        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23, text='Re-Identification threshold')
 
-        self.videoPathLabel = tk.Label(self.sliderFrame, text='full path to video')
-        self.videoPathEntry = tk.Entry(self.sliderFrame, width=23, text='full path to video')
+        self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to Video')
+        self.videoPathEntry = tk.Entry(self.sliderFrame, width=23, text='Full Path to Video')
 
-        self.startButton = tk.Button(self.sliderFrame, bg="red", fg="blue", text="Start")
+        self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
 
         self.startButton.bind('<ButtonRelease-1>', self.configure_and_start_processing())
 
+        self.root.resizable(False, False)
         self.networkLabel.pack()
         self.mainMode.pack()
         self.reLabel.pack()
@@ -89,7 +126,7 @@ class Gui:
         self.detectorThreshold.pack()
         self.rtrashLabel.pack()
         self.re_identificationThreshold.pack()
-        
+
         self.videoPathLabel.pack()
         self.videoPathEntry.pack()
 
@@ -152,5 +189,5 @@ log.basicConfig(format="[ %(levelname)s ] %(message)s",
                 level=log.INFO, stream=sys.stdout)
 # start the app
 log.info("starting...")
-pba = Gui("videocam\\videcam2.mov", camera=False)
+pba = Gui("videcam\\videcam2.mov", camera=False)
 pba.root.mainloop()
