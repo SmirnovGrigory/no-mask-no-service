@@ -1,8 +1,9 @@
 import numpy as np
 import sys
+import imageio
 
 import cv2
-import tkinter as tk
+import tkinter as tk, threading
 from tkinter import ttk
 from PIL import Image, ImageTk
 
@@ -31,7 +32,7 @@ class Gui:
         self.root.title("no-mask-no-service")  # set window title
         # self.destructor function gets fired when the window is closed
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
-        self.root.geometry("1152x630")
+        self.root.geometry("1152x670")
         self.root.configure(bg="#E5E1D8")
 
         canvas = tk.Canvas(
@@ -53,32 +54,92 @@ class Gui:
             fill="#C4C4C4",
             outline="")
 
+        canvas.create_rectangle(
+            0.0,
+            500.0,
+            1152.0,
+            700.0,
+            fill="#E5E5E5",
+            outline="")
+
+        canvas.create_text(
+            580.0,
+            534.0,
+            text="Output",
+            fill="#645F5F",
+            font=('Georgia', int(40.0), 'bold')
+        )
+
         canvas.create_text(
             390.0,
-            44.0,
+            34.0,
             text="Video",
             fill="#645F5F",
-            font=('Georgia', int(48.0))
+            font=('Georgia', int(40.0), 'bold')
         )
 
         canvas.create_text(
             990.0,
-            44.0,
+            34.0,
             text="Settings",
             fill="#645F5F",
-            font=('Georgia', int(48.0))
+            font=('Georgia', int(40.0), 'bold')
+        )
+
+        canvas.create_rectangle(
+            745.0,
+            570.0,
+            1017.0,
+            650.0,
+            fill="#C4C4C4",
+            outline="")
+
+        canvas.create_rectangle(
+            440.0,
+            570.0,
+            712.0,
+            650.0,
+            fill="#C4C4C4",
+            outline="")
+
+        canvas.create_rectangle(
+            135.0,
+            570.0,
+            407.0,
+            650.0,
+            fill="#C4C4C4",
+            outline="")
+
+        canvas.create_text(
+            159.0,
+            580.0,
+            text="FPS:",
+            fill="#645F5F",
+            font=('Georgia', int(16.0), 'bold')
+        )
+
+        canvas.create_text(
+            526.0,
+            580.0,
+            text="People With Masks:",
+            fill="#645F5F",
+            font=('Georgia', int(16.0), 'bold')
+        )
+
+        canvas.create_text(
+            845.0,
+            580.0,
+            text="People Without Masks:",
+            fill="#645F5F",
+            font=('Georgia', int(16.0), 'bold')
         )
 
         self.panel = tk.Label(self.root)  # initialize image panel
         self.panel.pack(side=tk.LEFT)
 
-        # create a button, that when pressed, will take the current frame and save it to file
-        # btn = tk.Button(self.root, text="Snapshot!", command=self.take_snapshot)
-        # btn.pack(fill="both", expand=True, padx=10, pady=10)
-
         # Slider window (slider controls stage position)
-        self.sliderFrame = tk.Frame(self.root)
-        self.sliderFrame.pack(side=tk.RIGHT, padx=55, pady=100)
+        self.sliderFrame = tk.Frame(self.root, width=600, height=150, highlightthickness=1, highlightbackground="#C4C4C4")
+        self.sliderFrame.place(in_=self.root, anchor="c", relx=.855, rely=.39)
 
         self.networkLabel = tk.Label(self.sliderFrame, text='Network Mode')
         self.mainMode = ttk.Combobox(self.sliderFrame,
@@ -110,9 +171,16 @@ class Gui:
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
 
-        self.startButton.bind('<ButtonRelease-1>', self.configure_and_start_processing())
+        my_label = tk.Label(self.root)
+        my_label.pack()
+        thread = threading.Thread(target=self.stream, args=(my_label, input_cap))
+        thread.daemon = 1
+        thread.start()
+
+        #self.startButton.bind('<ButtonRelease-1>', self.stream("videcam//videcam_6.mov"))
 
         self.root.resizable(False, False)
+
         self.networkLabel.pack()
         self.mainMode.pack()
         self.reLabel.pack()
@@ -132,11 +200,6 @@ class Gui:
 
         self.startButton.pack()
 
-        # start a self.video_loop that constantly pools the video sensor
-        # for the most recently read frame
-
-        # self.video_loop()
-
     def configure_and_start_processing(self):
         # TODO
         self.video_loop()
@@ -155,40 +218,48 @@ class Gui:
         if ok:  # frame captured without any errors
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)  # convert colors from BGR to RGBA
             self.current_image = Image.fromarray(cv2image)  # convert image for PIL
-            resized = self.current_image.resize((800, 500), Image.ANTIALIAS)
+            resized = self.current_image.resize((650, 420), Image.ANTIALIAS)
             imgtk = ImageTk.PhotoImage(resized)  # convert image for tkinter
             self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
-            self.panel.config(image=imgtk)  # show the image
+            #self.panel.config(image=imgtk)  # show the image
+            label1 = tk.Label(frame, image=imgtk)
+            label1.image = imgtk
+            label1.place(x=20, y=20)
+
         print("FPS: ", 1.0 / (time.time() - start_time))
         self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
-
-    # def take_snapshot(self):
-    #     """ Take snapshot and save it to the file """
-    #     ts = datetime.datetime.now()  # grab the current timestamp
-    #     filename = "{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # construct filename
-    #     p = os.path.join(self.output_path, filename)  # construct output path
-    #     self.current_image.save(p, "JPEG")  # save image as jpeg file
-    #     print("[INFO] saved {}".format(filename))
 
     def destructor(self):
         """ Destroy the root object and release all resources """
         # print("[INFO] closing...")
         log.info("closing...")
         self.root.destroy()
-        self.vs.release()  # release web camera
+        # self.vs.release()  # release web camera
         cv2.destroyAllWindows()  # it is not mandatory in this application
 
+    def stream(self, label, video_name):
+        video = imageio.get_reader(video_name)
+        for image in video.iter_data():
+            start_time = time.time()
+            self.current_image = Image.fromarray(image)  # convert image for PIL
+            resized = self.current_image.resize((550, 350), Image.ANTIALIAS)
+            frame_image = ImageTk.PhotoImage(resized)
+            label.config(image=frame_image)
+            label.image = frame_image
+            label.place(x=120, y=80)
+            print("FPS: ", 1.0 / (time.time() - start_time))
+        self.root.after(30, self.stream(label, video_name))
 
-# construct the argument parse and parse the arguments
-# ap = argparse.ArgumentParser()
-# ap.add_argument("-o", "--output", default="./",
-#                 help="path to output directory to store snapshots (default: current folder")
-# args = vars(ap.parse_args())
 
+if __name__ == "__main__":
+    pba = Gui("videcam\\videcam2.mov", camera=False)
+    pba.root.mainloop()
 
-log.basicConfig(format="[ %(levelname)s ] %(message)s",
-                level=log.INFO, stream=sys.stdout)
-# start the app
-log.info("starting...")
-pba = Gui("videcam\\videcam2.mov", camera=False)
-pba.root.mainloop()
+    """
+    log.basicConfig(format="[ %(levelname)s ] %(message)s",
+                    level=log.INFO, stream=sys.stdout)
+    # start the app
+    log.info("starting...")
+    pba = Gui("videcam//videcam_6.mov", camera=False)
+    pba.root.mainloop()
+    """
