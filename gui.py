@@ -155,7 +155,8 @@ class Gui:
         if ok:  # frame captured without any errors
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)  # convert colors from BGR to RGBA
             self.current_image = Image.fromarray(cv2image)  # convert image for PIL
-            imgtk = ImageTk.PhotoImage(image=self.current_image)  # convert image for tkinter
+            resized = self.current_image.resize((800, 500), Image.ANTIALIAS)
+            imgtk = ImageTk.PhotoImage(resized)  # convert image for tkinter
             self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
             self.panel.config(image=imgtk)  # show the image
         print("FPS: ", 1.0 / (time.time() - start_time))
