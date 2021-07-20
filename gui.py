@@ -34,7 +34,7 @@ class Gui:
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
 
         self.panel = tk.Label(self.root)  # initialize image panel
-        self.panel.pack(padx=10, pady=10)
+        self.panel.pack(side=tk.LEFT)
 
         # create a button, that when pressed, will take the current frame and save it to file
         # btn = tk.Button(self.root, text="Snapshot!", command=self.take_snapshot)
@@ -63,13 +63,18 @@ class Gui:
                                            "HETERO"])
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='Aizoo threshold')
-        self.aizooThreshold = tk.Entry(self.sliderFrame, width=40, text='Aizoo threshold')
+        self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='Aizoo threshold')
         self.dtrashLabel = tk.Label(self.sliderFrame, text='detector threshold')
-        self.detectorThreshold = tk.Entry(self.sliderFrame, width=40, text='detector threshold')
+        self.detectorThreshold = tk.Entry(self.sliderFrame, width=23, text='detector threshold')
         self.rtrashLabel = tk.Label(self.sliderFrame, text='re-identification threshold')
-        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=40, text='re-identification threshold')
+        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23, text='re-identification threshold')
+
+        self.videoPathLabel = tk.Label(self.sliderFrame, text='full path to video')
+        self.videoPathEntry = tk.Entry(self.sliderFrame, width=23, text='full path to video')
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="blue", text="Start")
+
+        self.startButton.bind('<ButtonRelease-1>', self.configure_and_start_processing())
 
         self.networkLabel.pack()
         self.mainMode.pack()
@@ -84,11 +89,19 @@ class Gui:
         self.detectorThreshold.pack()
         self.rtrashLabel.pack()
         self.re_identificationThreshold.pack()
+        
+        self.videoPathLabel.pack()
+        self.videoPathEntry.pack()
 
         self.startButton.pack()
 
         # start a self.video_loop that constantly pools the video sensor
         # for the most recently read frame
+
+        # self.video_loop()
+
+    def configure_and_start_processing(self):
+        # TODO
         self.video_loop()
 
     def video_loop(self):
@@ -136,7 +149,7 @@ class Gui:
 
 
 log.basicConfig(format="[ %(levelname)s ] %(message)s",
-                    level=log.INFO, stream=sys.stdout)
+                level=log.INFO, stream=sys.stdout)
 # start the app
 log.info("starting...")
 pba = Gui("videocam\\videcam2.mov", camera=False)
