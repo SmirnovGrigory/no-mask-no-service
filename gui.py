@@ -184,11 +184,11 @@ class Gui:
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
         self.startButton.bind('<1>', self.validate_fields)
 
-        my_label = tk.Label(self.root)
-        my_label.pack()
-        thread = threading.Thread(target=self.stream, args=(my_label, input_cap))
-        thread.daemon = 1
-        thread.start()
+        self.my_label = tk.Label(self.root)
+        self.my_label.pack()
+        # thread = threading.Thread(target=self.stream, args=(self.my_label, input_cap))
+        # thread.daemon = 1
+        # thread.start()
 
         #self.startButton.bind('<ButtonRelease-1>', self.stream("videcam//videcam_6.mov"))
 

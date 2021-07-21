@@ -19,4 +19,6 @@ python main.py -i videocam\videcam2.mov -m C:\Users\User\repos\no-mask-no-servic
 
 python main.py -i videocam\videcam2.mov -m intel\face-detection-adas-0001\FP16\face-detection-adas-0001.xml -w intel\face-detection-adas-0001\FP16\face-detection-adas-0001.bin
 
-568x320
+C:\Users\User\repos\no-mask-no-service\images\2.png
+
+C:\Users\User\repos\no-mask-no-service\videcam\videcam_5.mov
