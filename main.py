@@ -4,6 +4,9 @@ import argparse
 import logging as log
 import time
 import pathlib
+import tkinter as tk
+
+import imageio
 from openvino.inference_engine import IECore
 from postprocessing import post_processing, calc_features_similarity
 from iedetector import InferenceEngineNetwork, check_bounds
@@ -290,6 +293,17 @@ def single_image_processing(detector, image_path, gui=None,
 #         if cv2.waitKey(1) & 0xFF == ord('q'):
 #             break
 
+def fun(gui, image):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+    gui.current_image = Image.fromarray(image)  # convert image for PIL
+    resized = gui.current_image.resize((550, 350))
+
+    frame_image = ImageTk.PhotoImage(resized)
+    gui.my_label.config(image=frame_image)
+    # gui.my_label.image = frame_image
+    gui.my_label.place(x=120, y=80)
+    gui.root.after(5000, fun(gui, image))
+
 
 def video_processing(detector, input_cap=None, gui=None,
                      in_model_api=False,
@@ -297,6 +311,7 @@ def video_processing(detector, input_cap=None, gui=None,
                      resolution='None', resolution_net=None,
                      mask_net=None,
                      reid_list=None, reid_net=None):
+
     if input_cap is not None:
         cap = open_images_capture(input_cap, True)
     else:
@@ -308,7 +323,13 @@ def video_processing(detector, input_cap=None, gui=None,
     if write_me:
         output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
 
+    #gui.my_label.place(x=120, y=80)
+
+    #gui.stream(gui.my_label, 'videcam\\videcam_5.mov')
+
     while True:
+        # if gui is not None:
+        #     image = next(iter(cap.iter_data()))
         if input_cap is not None:
             image = cap.read()
         else:
@@ -335,7 +356,7 @@ def video_processing(detector, input_cap=None, gui=None,
                                                    reid_net=reid_net)
             else:
                 output = detector.detect(image)
-                reid_list = draw_detections_with_postprocessing(image, output, None, 0.3, reid_list=reid_list,
+                reid_list = draw_detections_with_postprocessing(image, output, None, 0.9, reid_list=reid_list,
                                                                 reid_net=reid_net, draw_result=True, mask_net=mask_net)
 
         if resolution == 'all' and resolution_net is not None:
@@ -353,12 +374,13 @@ def video_processing(detector, input_cap=None, gui=None,
             gui.my_label.config(image=frame_image)
             gui.my_label.image = frame_image
             gui.my_label.place(x=120, y=80)
+            gui.root.update()
 
         if write_me:
             output.write(image)
 
         # Wait 1 ms and check pressed button to break the loop
-        if gui is None:
+        if gui is not None:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
@@ -376,7 +398,6 @@ def video_processing(detector, input_cap=None, gui=None,
             log.info(f"{len(reid_list)} peoples on the photo")
         else:
             log.info(f"0 peoples on the photo")
-
 
 def get_plugin_configs(device, num_streams, num_threads):
     config_user_specified = {}
@@ -480,22 +501,22 @@ def gui_api(gui):
     in_model_api = False
     deviceMode = gui.deviceMode.get()
     mask_detector = InferenceEngineNetwork(
-        configPath='C:\\Users\\User\\repos\\no-mask-no-service\\models\\model-AIZOO\\face_mask_detection.xml',
-        weightsPath='C:\\Users\\User\\repos\\no-mask-no-service\\models\\model-AIZOO\\face_mask_detection.bin',
+        configPath='models\\model-AIZOO\\face_mask_detection.xml',
+        weightsPath='models\\model-AIZOO\\face_mask_detection.bin',
         device=deviceMode,
         extension=None,
         classesPath=None)
-    detector = InferenceEngineNetwork(configPath="C:\\Users\\User\\repos\\no-mask-no-service\\models\\face-detection"
+    detector = InferenceEngineNetwork(configPath="models\\face-detection"
                                                  "-0200\\face-detection-0200.xml",
-                                      weightsPath="C:\\Users\\User\\repos\\no-mask-no-service\\models\\face-detection"
+                                      weightsPath="models\\face-detection"
                                                   "-0200\\face-detection-0200.bin",
                                       device=deviceMode,
                                       extension=None,
                                       classesPath=None)
-    reidentificator = InferenceEngineNetwork(configPath="C:\\Users\\User\\repos\\no-mask-no-service\\models\\face"
+    reidentificator = InferenceEngineNetwork(configPath="models\\face"
                                                         "-reidentification-retail-0095\\face-reidentification-retail"
                                                         "-0095.xml",
-                                             weightsPath="C:\\Users\\User\\repos\\no-mask-no-service\\models\\face"
+                                             weightsPath="models\\face"
                                                          "-reidentification-retail-0095\\face-reidentification-retail"
                                                          "-0095.bin",
                                              device=deviceMode,
@@ -508,11 +529,16 @@ def gui_api(gui):
                                 resolution_net=None, mask_net=None,
                                 reid_net=reidentificator)
 
-    elif gui.inputMode.get() == "Video" or gui.inputMode.get() == "Web camera":
+    elif gui.inputMode.get() == "Video":
+        gui.vs = open_images_capture(gui.videoPathEntry.get(), True)
         video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
                          reid_list=reidentification_list, resolution='None',
                          resolution_net=None, mask_net=None,
                          reid_net=reidentificator)
+    elif gui.inputMode.get() == "Web camera":
+        gui.vs = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        if not gui.vs.isOpened():
+            raise IOError("Cannot open webcam")
     else:
         raise Exception('unknown input format')
 

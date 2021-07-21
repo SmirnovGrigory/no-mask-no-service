@@ -17,15 +17,16 @@ from main import gui_api
 
 
 class Gui:
-    def __init__(self, input_cap, camera=True):
+    def __init__(self):
         """ Initialize application which uses OpenCV + Tkinter. It displays
             a video stream in a Tkinter window and stores current snapshot on disk """
-        if camera:
-            self.vs = cv2.VideoCapture(0)
-            self.camera = True
-        else:
-            self.vs = open_images_capture(input_cap, True)
-            self.camera = False
+        # if camera:
+        #     self.vs = cv2.VideoCapture(0)
+        #     self.camera = True
+        # else:
+        #     self.vs = open_images_capture(input_cap, True)
+        #     self.camera = False
+        self.vs = None
 
         self.current_image = None  # current image from the camera
 
@@ -173,13 +174,17 @@ class Gui:
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
         self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
+        self.aizooThreshold.insert(0, '0')
         self.dtrashLabel = tk.Label(self.sliderFrame, text='Face Detector threshold')
         self.detectorThreshold = tk.Entry(self.sliderFrame, width=23)
+        self.detectorThreshold.insert(0, '0')
         self.rtrashLabel = tk.Label(self.sliderFrame, text='Re-Identification threshold')
         self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23)
+        self.re_identificationThreshold.insert(0, '0')
 
         self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to input file')
         self.videoPathEntry = tk.Entry(self.sliderFrame, width=23)
+        self.videoPathEntry.insert(0, 'videcam\\videcam_5.mov')
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
         self.startButton.bind('<1>', self.validate_fields)
@@ -278,7 +283,7 @@ class Gui:
 
 
 if __name__ == "__main__":
-    pba = Gui("videcam\\videcam2.mov", camera=False)
+    pba = Gui()
     pba.root.mainloop()
 
     """
