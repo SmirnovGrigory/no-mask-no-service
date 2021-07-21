@@ -13,7 +13,7 @@ import time
 
 sys.path.append('C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
 from images_capture import open_images_capture
-
+from main import gui_api
 
 class Gui:
     def __init__(self, input_cap, camera=True):
@@ -65,7 +65,7 @@ class Gui:
         canvas.create_text(
             580.0,
             534.0,
-            text="Output",
+            text="Current parameters",
             fill="#645F5F",
             font=('Georgia', int(40.0), 'bold')
         )
@@ -73,7 +73,7 @@ class Gui:
         canvas.create_text(
             390.0,
             34.0,
-            text="Video",
+            text="Output screen",
             fill="#645F5F",
             font=('Georgia', int(40.0), 'bold')
         )
@@ -119,7 +119,7 @@ class Gui:
         )
 
         canvas.create_text(
-            526.0,
+            545.0,
             580.0,
             text="People With Masks:",
             fill="#645F5F",
@@ -127,7 +127,7 @@ class Gui:
         )
 
         canvas.create_text(
-            845.0,
+            870.0,
             580.0,
             text="People Without Masks:",
             fill="#645F5F",
@@ -141,23 +141,34 @@ class Gui:
         self.sliderFrame = tk.Frame(self.root, width=600, height=150, highlightthickness=1, highlightbackground="#C4C4C4")
         self.sliderFrame.place(in_=self.root, anchor="c", relx=.855, rely=.39)
 
+        self.inputLabel = tk.Label(self.sliderFrame, text='Input Mode')
+        self.inputMode = ttk.Combobox(self.sliderFrame,
+                                     values=[
+                                         "Image",
+                                         "Video",
+                                         "Web camera"])
+        self.inputMode.set("Image")
+
         self.networkLabel = tk.Label(self.sliderFrame, text='Network Mode')
         self.mainMode = ttk.Combobox(self.sliderFrame,
                                      values=[
                                          "AIZOO",
                                          "Face Detector",
                                          "Face Detector + AIZOO"])
+        self.mainMode.set("AIZOO")
         self.reLabel = tk.Label(self.sliderFrame, text='Re-Identification Mode')
         self.re_identificationMode = ttk.Combobox(self.sliderFrame,
                                                   values=[
                                                       "Re-Identification On",
                                                       "Re-Identification Off"])
+        self.re_identificationMode.set("Re-Identification On")
         self.deviceLabel = tk.Label(self.sliderFrame, text='Device Mode')
         self.deviceMode = ttk.Combobox(self.sliderFrame,
                                        values=[
                                            "CPU",
                                            "GPU",
                                            "HETERO"])
+        self.deviceMode.set("CPU")
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
         self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
@@ -170,6 +181,7 @@ class Gui:
         self.videoPathEntry = tk.Entry(self.sliderFrame, width=23, text='Full Path to Video')
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
+        self.startButton.bind('<1>', self.validate_fields)
 
         my_label = tk.Label(self.root)
         my_label.pack()
@@ -181,6 +193,8 @@ class Gui:
 
         self.root.resizable(False, False)
 
+        self.inputLabel.pack()
+        self.inputMode.pack()
         self.networkLabel.pack()
         self.mainMode.pack()
         self.reLabel.pack()
@@ -199,6 +213,15 @@ class Gui:
         self.videoPathEntry.pack()
 
         self.startButton.pack()
+        
+    def validate_fields(self, event):
+        if self.mainMode.get() == "" or self.deviceMode.get() == "" \
+            or self.re_identificationMode.get() == "" or self.aizooThreshold.get() == "" \
+            or self.detectorThreshold.get() == "" or self.re_identificationThreshold.get() == "" \
+            or self.videoPathEntry.get() == "":
+            return
+        else:
+            gui_api()
 
     def configure_and_start_processing(self):
         # TODO

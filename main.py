@@ -385,61 +385,71 @@ def main():
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
 
-    args = build_argparser().parse_args()
+    if __name__ == '__main__':
+        args = build_argparser().parse_args()
 
-    reidentification_list = []
-    in_model_api = False
-    model_api_names = ["faceboxes", "retinaface", "ssd", "yolo", "centernet"]
-    models_list = []
-    detector, reidentificator, resolutioner, mask_detector = None, None, None, None
+        reidentification_list = []
+        in_model_api = False
+        model_api_names = ["faceboxes", "retinaface", "ssd", "yolo", "centernet"]
+        models_list = []
+        detector, reidentificator, resolutioner, mask_detector = None, None, None, None
 
-    for model_name, model_weights in zip(args.model, args.weights):
-        for model_api_name in model_api_names:
-            if model_api_name in model_name:
-                ie = IECore()
-                # HETERO: CPU, GPU or CPU or GPU
-                plugin_configs = get_plugin_configs('CPU', 0, 0)
-                detector_model = models.FaceBoxes(ie, pathlib.Path(model_name), input_transform)
-                models_list.append(AsyncPipeline(ie, detector_model, plugin_configs,
-                                                 device='CPU',
-                                                 max_num_requests=1))
+        for model_name, model_weights in zip(args.model, args.weights):
+            for model_api_name in model_api_names:
+                if model_api_name in model_name:
+                    ie = IECore()
+                    # HETERO: CPU, GPU or CPU or GPU
+                    plugin_configs = get_plugin_configs('CPU', 0, 0)
+                    detector_model = models.FaceBoxes(ie, pathlib.Path(model_name), input_transform)
+                    models_list.append(AsyncPipeline(ie, detector_model, plugin_configs,
+                                                     device='CPU',
+                                                     max_num_requests=1))
 
-                in_model_api = True
-                break
+                    in_model_api = True
+                    break
+            else:
+                models_list.append(InferenceEngineNetwork(configPath=model_name,
+                                                          weightsPath=model_weights,
+                                                          device=args.device,
+                                                          extension=args.cpu_extension,
+                                                          classesPath=args.classes))
+            if 'mask_detection' in model_name:
+                mask_detector = models_list[-1:][0]
+            elif 'detection' in model_name:
+                detector = models_list[-1:][0]
+            elif 'reidentification' in model_name:
+                reidentificator = models_list[-1:][0]
+            elif 'resolution' in model_name:
+                resolutioner = models_list[-1:][0]
+
+        if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
+            single_image_processing(mask_detector, args.input, in_model_api=in_model_api,
+                                    reid_list=reidentification_list, resolution='None',
+                                    resolution_net=resolutioner, mask_net=None,
+                                    reid_net=reidentificator)
+        elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
+            video_processing(detector, args.input, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=resolutioner, mask_net=None,
+                             reid_net=reidentificator)
+        elif 'cam' in args.input:
+            video_processing(detector, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=resolutioner, mask_net=None,
+                             reid_net=reidentificator)
         else:
-            models_list.append(InferenceEngineNetwork(configPath=model_name,
-                                                      weightsPath=model_weights,
-                                                      device=args.device,
-                                                      extension=args.cpu_extension,
-                                                      classesPath=args.classes))
-        if 'mask_detection' in model_name:
-            mask_detector = models_list[-1:][0]
-        elif 'detection' in model_name:
-            detector = models_list[-1:][0]
-        elif 'reidentification' in model_name:
-            reidentificator = models_list[-1:][0]
-        elif 'resolution' in model_name:
-            resolutioner = models_list[-1:][0]
-
-    if args.input.endswith(('jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'gif')):
-        single_image_processing(detector, args.input, in_model_api=in_model_api,
-                                reid_list=reidentification_list, resolution='None',
-                                resolution_net=resolutioner, mask_net=mask_detector,
-                                reid_net=reidentificator)
-    elif args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')):
-        video_processing(detector, args.input, in_model_api=in_model_api,
-                         reid_list=reidentification_list, resolution='None',
-                         resolution_net=resolutioner, mask_net=None,
-                         reid_net=reidentificator)
-    elif 'cam' in args.input:
-        video_processing(detector, in_model_api=in_model_api,
-                         reid_list=reidentification_list, resolution='None',
-                         resolution_net=resolutioner, mask_net=None,
-                         reid_net=reidentificator)
+            raise Exception('unknown input format')
     else:
-        raise Exception('unknown input format')
+        pass
 
     return
+
+def gui_api(event):
+    log.basicConfig(format="[ %(levelname)s ] %(message)s",
+                    level=log.INFO, stream=sys.stdout)
+
+
+
 
 
 if __name__ == '__main__':
