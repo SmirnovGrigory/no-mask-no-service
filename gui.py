@@ -271,10 +271,18 @@ class Gui:
             label.config(image=frame_image)
             label.image = frame_image
             label.place(x=120, y=80)
-            print_label = tk.Label(self.root, text=str(round(1.0 / (time.time() - start_time))), bg='#C4C4C4', fg='#645F5F')
+            print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time)))+ '   '), bg='#C4C4C4', fg='#645F5F')
             print_label.config(font=("Courier", 24, 'bold'))
             print_label.place(x=245, y=595)
         self.root.after(30, self.stream(label, video_name))
+        
+    def printMaskCounter(self, masks_counter, no_masks_counter):
+        print_mlabel = tk.Label(self.root, text=(str(masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
+        print_mlabel.config(font=("Courier", 24, 'bold'))
+        print_mlabel.place(x=631, y=595)
+        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
+        print_nmlabel.config(font=("Courier", 24, 'bold'))
+        print_nmlabel.place(x=956, y=595)
 
 
 if __name__ == "__main__":
