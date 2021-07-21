@@ -15,6 +15,7 @@ sys.path.append('C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment
 from images_capture import open_images_capture
 from main import gui_api
 
+
 class Gui:
     def __init__(self, input_cap, camera=True):
         """ Initialize application which uses OpenCV + Tkinter. It displays
@@ -270,7 +271,9 @@ class Gui:
             label.config(image=frame_image)
             label.image = frame_image
             label.place(x=120, y=80)
-            print("FPS: ", 1.0 / (time.time() - start_time))
+            print_label = tk.Label(self.root, text=str(round(1.0 / (time.time() - start_time))), bg='#C4C4C4', fg='#645F5F')
+            print_label.config(font=("Courier", 24, 'bold'))
+            print_label.place(x=245, y=595)
         self.root.after(30, self.stream(label, video_name))
 
 
