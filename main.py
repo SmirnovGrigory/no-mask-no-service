@@ -444,9 +444,24 @@ def main():
 
     return
 
-def gui_api(event):
+def gui_api(gui):
     log.basicConfig(format="[ %(levelname)s ] %(message)s",
                     level=log.INFO, stream=sys.stdout)
+
+    reidentification_list = []
+    in_model_api = False
+    if gui.inputMode.get() == "Image":
+        single_image_processing(mask_detector, gui.videoPathEntry.get(), in_model_api=in_model_api,
+                                reid_list=reidentification_list, resolution='None',
+                                resolution_net=resolutioner, mask_net=None,
+                                reid_net=reidentificator)
+    elif gui.inputMode.get() == "Video" or gui.inputMode.get() == "Web camera":
+        video_processing(detector, in_model_api=in_model_api,
+                         reid_list=reidentification_list, resolution='None',
+                         resolution_net=resolutioner, mask_net=None,
+                         reid_net=reidentificator)
+    else:
+        raise Exception('unknown input format')
 
 
 

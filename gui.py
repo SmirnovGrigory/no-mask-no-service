@@ -173,12 +173,12 @@ class Gui:
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
         self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
         self.dtrashLabel = tk.Label(self.sliderFrame, text='Face Detector threshold')
-        self.detectorThreshold = tk.Entry(self.sliderFrame, width=23, text='Face Detector threshold')
+        self.detectorThreshold = tk.Entry(self.sliderFrame, width=23)
         self.rtrashLabel = tk.Label(self.sliderFrame, text='Re-Identification threshold')
-        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23, text='Re-Identification threshold')
+        self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23)
 
-        self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to Video')
-        self.videoPathEntry = tk.Entry(self.sliderFrame, width=23, text='Full Path to Video')
+        self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to input file')
+        self.videoPathEntry = tk.Entry(self.sliderFrame, width=23)
 
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
         self.startButton.bind('<1>', self.validate_fields)
@@ -221,7 +221,7 @@ class Gui:
             or self.videoPathEntry.get() == "":
             return
         else:
-            gui_api()
+            gui_api(self)
 
     def configure_and_start_processing(self):
         # TODO
