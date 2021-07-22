@@ -210,19 +210,35 @@ def single_image_processing(detector, image_path, gui=None,
 
         # Get detection result
         results, meta = detector.get_result(frame_id)
-        reid_list = draw_detections(image, results, None, float(gui.detectorThreshold.get()),
-                                    reid_threshold=float(gui.re_identificationThreshold.get()))
+        if gui is not None:
+            reid_list = draw_detections(image, results, None, float(gui.detectorThreshold.get()),
+                                        reid_threshold=float(gui.re_identificationThreshold.get()))
+        else:
+            reid_list = draw_detections(image, results, None, 0.5,
+                                        reid_threshold=0.5)
     else:
         if "face_mask_detection" in detector.model or "AIZOO" in detector.model:
             y_bboxes_output, y_cls_output = detector.detect(image, aizoo=True)
-            image, reid_list = post_processing(image, y_bboxes_output, y_cls_output, reid_list=reid_list,
-                                               reid_net=reid_net, reid_threshold=float(gui.re_identificationThreshold.get()),
-                                               conf_thresh=float(gui.aizooThreshold.get()))
+            if gui is not None:
+                image, reid_list = post_processing(image, y_bboxes_output, y_cls_output, reid_list=reid_list,
+                                                   reid_net=reid_net, reid_threshold=float(gui.re_identificationThreshold.get()),
+                                                   conf_thresh=float(gui.aizooThreshold.get()))
+            else:
+                image, reid_list = post_processing(image, y_bboxes_output, y_cls_output, reid_list=reid_list,
+                                                   reid_net=reid_net,
+                                                   reid_threshold=0.5,
+                                                   conf_thresh=0.5)
         else:
             output = detector.detect(image)
-            reid_list = draw_detections_with_postprocessing(image, output, None, float(gui.detectorThreshold.get()), reid_list=reid_list,
-                                                            reid_net=reid_net, draw_result=True, mask_net=mask_net,
-                                                            reid_threshold=float(gui.re_identificationThreshold.get()))
+            if gui is not None:
+                reid_list = draw_detections_with_postprocessing(image, output, None, float(gui.detectorThreshold.get()), reid_list=reid_list,
+                                                                reid_net=reid_net, draw_result=True, mask_net=mask_net,
+                                                                reid_threshold=float(gui.re_identificationThreshold.get()))
+            else:
+                reid_list = draw_detections_with_postprocessing(image, output, None, 0.5,
+                                                                reid_list=reid_list,
+                                                                reid_net=reid_net, draw_result=True, mask_net=mask_net,
+                                                                reid_threshold=0.5)
 
     if resolution == 'all' and resolution_net is not None:
         image = cv2.resize(image, (old_width, old_height), cv2.INTER_AREA)

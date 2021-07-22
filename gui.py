@@ -140,8 +140,21 @@ class Gui:
         #self.panel.pack(side=tk.LEFT)
 
         # Slider window (slider controls stage position)
-        self.sliderFrame = tk.Frame(self.root, width=600, height=150, highlightthickness=1, highlightbackground="#C4C4C4")
-        self.sliderFrame.place(in_=self.root, anchor="c", relx=.855, rely=.39)
+        self.sliderFrame = tk.Frame(self.root, width=150, height=400, highlightthickness=1, highlightbackground="#C4C4C4")
+        self.sliderFrame.place(in_=self.root, anchor="c", relx=.855, rely=.40)
+
+        print_label = tk.Label(self.root, text=(str(0)), bg='#C4C4C4',
+                               fg='#645F5F', name='fpsLabel')
+        print_label.config(font=("Courier", 24, 'bold'))
+        print_label.place(x=245, y=595)
+
+        print_mlabel = tk.Label(self.root, text=(str(0)), bg='#C4C4C4', fg='#645F5F', name='maskLabel')
+        print_mlabel.config(font=("Courier", 24, 'bold'))
+        print_mlabel.place(x=551, y=595)
+
+        print_nmlabel = tk.Label(self.root, text=(str(0)), bg='#C4C4C4', fg='#645F5F', name='noMaskLabel')
+        print_nmlabel.config(font=("Courier", 24, 'bold'))
+        print_nmlabel.place(x=856, y=595)
 
         self.inputLabel = tk.Label(self.sliderFrame, text='Input Mode')
         self.inputMode = ttk.Combobox(self.sliderFrame,
@@ -282,20 +295,11 @@ class Gui:
         self.root.after(30, self.stream(label, video_name))
         
     def printMaskCounter(self, masks_counter, no_masks_counter):
-        print_mlabel = tk.Label(self.root, text=(str(masks_counter)), bg='#C4C4C4', fg='#645F5F')
-        print_mlabel.config(font=("Courier", 24, 'bold'))
-        print_mlabel.place(x=551, y=595)
-        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)), bg='#C4C4C4', fg='#645F5F')
-        print_nmlabel.config(font=("Courier", 24, 'bold'))
-        print_nmlabel.place(x=856, y=595)
-        #self.root.update()
+        self.root.children['maskLabel'].config(text=(str(masks_counter)))
+        self.root.children['noMaskLabel'].config(text=(str(no_masks_counter)))
 
     def printFps(self, start_time):
-        print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time))) + '   '), bg='#C4C4C4',
-                               fg='#645F5F')
-        print_label.config(font=("Courier", 24, 'bold'))
-        print_label.place(x=245, y=595)
-
+        self.root.children['fpsLabel'].config(text=(str(round(1.0 / (time.time() - start_time))) + '   '))
 
 if __name__ == "__main__":
     pba = Gui()
