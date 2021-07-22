@@ -191,8 +191,8 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
         face_image = image[int(ymin):int(ymax),
                            int(xmin):int(xmax)]
 
-        cv2.imshow("face", face_image)
-        cv2.waitKey(1)
+        # cv2.imshow("face", face_image)
+        # cv2.waitKey(1)
 
         if reid_net is not None and reid_list is not None:
             out = reid_net.detect(face_image)
@@ -203,7 +203,11 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
             else:
                 reid_list.append({'pred': prediction, 'vals': out})
         elif reid_list:
-            reid_list.append({'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)})
+            for old_note in reid_list:
+                if {'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)} == old_note:
+                    break
+            else:
+                reid_list.append({'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)})
         else:
             reid_list = [{'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)}]
 

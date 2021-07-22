@@ -47,8 +47,8 @@ def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9,
         detection.y_max += (extend_coef * y_delta)
         detection[3] = check_bounds(detection.x_min)
         detection[4] = check_bounds(detection.y_min)
-        detection[5] = check_bounds(detection.x_max, max=width)
-        detection[6] = check_bounds(detection.y_max, max=height)
+        detection[5] = check_bounds(detection.x_max, max_val=width)
+        detection[6] = check_bounds(detection.y_max, max_val=height)
 
         # If score more than threshold, draw rectangle on the frame
         if score > threshold if threshold > 0 else 0.1:
@@ -63,7 +63,11 @@ def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9,
                 else:
                     reid_list.append(out)
             elif reid_list:
-                reid_list.append(detection)
+                for old_note in reid_list:
+                    if detection == old_note:
+                        break
+                else:
+                    reid_list.append(detection)
             else:
                 reid_list = [detection]
 
@@ -122,15 +126,16 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
         y_max += (extend_coef * y_delta)
         detection[3] = check_bounds(x_min)
         detection[4] = check_bounds(y_min)
-        detection[5] = check_bounds(x_max, max=width)
-        detection[6] = check_bounds(y_max, max=height)
+        detection[5] = check_bounds(x_max, max_val=width)
+        detection[6] = check_bounds(y_max, max_val=height)
 
         # If score more than threshold, draw rectangle on the frame
         if score > threshold if threshold > 0 else 0.1:
             face_image = frame[int(detection[4]):int(detection[6]),
                                int(detection[3]):int(detection[5])]
 
-            cv2.imshow("face", face_image)
+            # cv2.imshow("face", face_image)
+            # cv2.waitKey(1)
 
             if mask_net is None and reid_net is not None and reid_list is not None:
                 out = reid_net.detect(face_image)
@@ -140,7 +145,11 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
                 else:
                     reid_list.append(out)
             elif mask_net is None and reid_list is not None:
-                reid_list.append(detection)
+                for old_note in reid_list:
+                    if detection == old_note:
+                        break
+                else:
+                    reid_list.append(detection)
             elif mask_net is None:
                 reid_list = [detection]
 
@@ -256,7 +265,6 @@ def single_image_processing(detector, image_path, gui=None,
         frame_image = ImageTk.PhotoImage(resized, Image.ANTIALIAS)
         gui.my_label.config(image=frame_image)
         gui.my_label.image = frame_image
-        gui.my_label.place(x=120, y=80)
 
     if mask_net is not None or 'AIZOO' in detector.model:
         with_mask, without_mask = 0, 0
@@ -384,11 +392,10 @@ def video_processing(detector, input_cap=None, gui=None,
 
             frame_image = ImageTk.PhotoImage(resized, Image.ANTIALIAS)
             gui.my_label.config(image=frame_image)
+            # just to save picture in widget
             gui.my_label.image = frame_image
-            gui.my_label.place(x=120, y=80)
             gui.root.update()
-
-        gui.printFps(start_time)
+            gui.printFps(start_time)
 
         if write_me:
             output.write(image)
@@ -542,55 +549,27 @@ def gui_api(gui):
             extension=None,
             classesPath=None)
 
-    if gui.inputMode.get() == "Image":
-        if gui.mainMode.get() == "AIZOO":
-            single_image_processing(mask_detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                                    reid_list=reidentification_list, resolution='None',
-                                    resolution_net=None, mask_net=None,
-                                    reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector":
-            single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                                    reid_list=reidentification_list, resolution='None',
-                                    resolution_net=None, mask_net=None,
-                                    reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector + AIZOO":
-            single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                                    reid_list=reidentification_list, resolution='None',
-                                    resolution_net=None, mask_net=mask_detector,
-                                    reid_net=reidentificator)
+    if gui.mainMode.get() == "AIZOO":
+        detector = mask_detector
+        mask_detector = None
+    elif gui.mainMode.get() == "Face Detector":
+        mask_detector = None
 
-    elif gui.inputMode.get() == "Video":
-        if gui.mainMode.get() == "AIZOO":
-            video_processing(mask_detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector":
-            video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector + AIZOO":
-            video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=mask_detector,
-                             reid_net=reidentificator)
-    elif gui.inputMode.get() == "Web camera":
-        if gui.mainMode.get() == "AIZOO":
-            video_processing(mask_detector, gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector":
-            video_processing(detector, gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
-        elif gui.mainMode.get() == "Face Detector + AIZOO":
-            video_processing(detector, gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=mask_detector,
-                             reid_net=reidentificator)
+    if gui.inputMode.get() == "Web camera":
+        input_cap = None
+    else:
+        input_cap = gui.videoPathEntry.get()
+
+    if gui.inputMode.get() == "Image":
+        single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                                reid_list=reidentification_list, resolution='None',
+                                resolution_net=None, mask_net=mask_detector,
+                                reid_net=reidentificator)
+    elif gui.inputMode.get() in ("Video", "Web camera"):
+        video_processing(detector, input_cap=input_cap, gui=gui, in_model_api=in_model_api,
+                         reid_list=reidentification_list, resolution='None',
+                         resolution_net=None, mask_net=mask_detector,
+                         reid_net=reidentificator)
     else:
         raise Exception('unknown input format')
 

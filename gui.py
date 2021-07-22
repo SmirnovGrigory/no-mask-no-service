@@ -200,6 +200,7 @@ class Gui:
         self.startButton.bind('<1>', self.validate_fields)
 
         self.my_label = tk.Label(self.root)
+        self.my_label.place(x=120, y=80)
         # self.my_label.pack()
         # thread = threading.Thread(target=self.stream, args=(self.my_label, input_cap))
         # thread.daemon = 1
