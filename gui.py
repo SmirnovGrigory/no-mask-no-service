@@ -285,9 +285,10 @@ class Gui:
         print_mlabel = tk.Label(self.root, text=(str(masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
         print_mlabel.config(font=("Courier", 24, 'bold'))
         print_mlabel.place(x=631, y=595)
-        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
+        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)+ ' '), bg='#C4C4C4', fg='#645F5F')
         print_nmlabel.config(font=("Courier", 24, 'bold'))
         print_nmlabel.place(x=956, y=595)
+        self.root.update()
 
     def printFps(self, start_time):
         print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time))) + '   '), bg='#C4C4C4',

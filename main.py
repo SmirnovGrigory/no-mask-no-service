@@ -216,16 +216,19 @@ def single_image_processing(detector, image_path, gui=None,
 
         # Get detection result
         results, meta = detector.get_result(frame_id)
-        reid_list = draw_detections(image, results, None, gui.detectorThreshold.get(), reid_threshold=gui.re_identificationThreshold.get())
+        reid_list = draw_detections(image, results, None, float(gui.detectorThreshold.get()),
+                                    reid_threshold=float(gui.re_identificationThreshold.get()))
     else:
         if "face_mask_detection" in detector.model or "AIZOO" in detector.model:
             y_bboxes_output, y_cls_output = detector.detect(image, aizoo=True)
             image, reid_list = post_processing(image, y_bboxes_output, y_cls_output, reid_list=reid_list,
-                                               reid_net=reid_net)
+                                               reid_net=reid_net, reid_threshold=float(gui.re_identificationThreshold.get()),
+                                               conf_thresh=float(gui.aizooThreshold.get()))
         else:
             output = detector.detect(image)
-            reid_list = draw_detections_with_postprocessing(image, output, None, 0.3, reid_list=reid_list,
-                                                            reid_net=reid_net, draw_result=True, mask_net=mask_net)
+            reid_list = draw_detections_with_postprocessing(image, output, None, float(gui.detectorThreshold.get()), reid_list=reid_list,
+                                                            reid_net=reid_net, draw_result=True, mask_net=mask_net,
+                                                            reid_threshold=float(gui.re_identificationThreshold.get()))
 
     if resolution == 'all' and resolution_net is not None:
         image = cv2.resize(image, (old_width, old_height), cv2.INTER_AREA)
@@ -253,11 +256,15 @@ def single_image_processing(detector, image_path, gui=None,
                 else:
                     with_mask += 1
         log.info(f"There are {with_mask} people with mask and {without_mask} people without mask on the photo")
+        if gui is not None:
+            gui.printMaskCounter(with_mask, without_mask)
     else:
         if reid_list is not None:
             log.info(f"{len(reid_list)} peoples on the photo")
+            gui.printMaskCounter(0, len(reid_list))
         else:
             log.info(f"0 peoples on the photo")
+            gui.printMaskCounter(0, 0)
 
     if write_me:
         cv2.imwrite('results\\result_img' + str(round(time.time())) + '.jpg', image)
@@ -338,17 +345,20 @@ def video_processing(detector, input_cap=None, gui=None,
 
             # Get detection result
             results, meta = detector.get_result(frame_id)
-            reid_list = draw_detections(image, results, None, gui.detectorThreshold.get(), reid_threshold=gui.re_identificationThreshold.get())
+            reid_list = draw_detections(image, results, None, float(gui.detectorThreshold.get()),
+                                        reid_threshold=float(gui.re_identificationThreshold.get()))
         else:
             if "face_mask_detection" in detector.model or "AIZOO" in detector.model:
                 y_bboxes_output, y_cls_output = detector.detect(image, aizoo=True)
                 image, reid_list = post_processing(image, y_bboxes_output, y_cls_output, reid_list=reid_list,
-                                                   reid_net=reid_net)
+                                                   reid_net=reid_net, reid_threshold=float(gui.re_identificationThreshold.get()),
+                                                   conf_thresh=float(gui.aizooThreshold.get()))
             else:
                 output = detector.detect(image)
-                reid_list = draw_detections_with_postprocessing(image, output, None, gui.detectorThreshold.get(),
+                reid_list = draw_detections_with_postprocessing(image, output, None, float(gui.detectorThreshold.get()),
                                                                 reid_list=reid_list,
-                                                                reid_net=reid_net, draw_result=True, mask_net=mask_net)
+                                                                reid_net=reid_net, draw_result=True, mask_net=mask_net,
+                                                                reid_threshold=float(gui.re_identificationThreshold.get()))
 
         if resolution == 'all' and resolution_net is not None:
             image = cv2.resize(image, (1280, 720), cv2.INTER_AREA)
@@ -372,25 +382,27 @@ def video_processing(detector, input_cap=None, gui=None,
         if write_me:
             output.write(image)
 
-        # Wait 1 ms and check pressed button to break the loop
-        if gui is not None:
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-    if mask_net is not None or 'AIZOO' in detector.model:
-        with_mask, without_mask = 0, 0
-        if reid_list is not None:
-            for reid_dict in reid_list:
-                if reid_dict['pred'] == 'NoMask':
-                    without_mask += 1
-                else:
-                    with_mask += 1
-        log.info(f"There are {with_mask} people with mask and {without_mask} people without mask on the photo")
-    else:
-        if reid_list is not None:
-            log.info(f"{len(reid_list)} peoples on the photo")
+        if mask_net is not None or 'AIZOO' in detector.model:
+            with_mask, without_mask = 0, 0
+            if reid_list is not None:
+                for reid_dict in reid_list:
+                    if reid_dict['pred'] == 'NoMask':
+                        without_mask += 1
+                    else:
+                        with_mask += 1
+            log.info(f"There are {with_mask} people with mask and {without_mask} people without mask on the photo")
+            gui.printMaskCounter(with_mask, without_mask)
         else:
-            log.info(f"0 peoples on the photo")
+            if reid_list is not None:
+                log.info(f"{len(reid_list)} peoples on the photo")
+                gui.printMaskCounter(0, len(reid_list))
+            else:
+                log.info(f"0 peoples on the photo")
+                gui.printMaskCounter(0, 0)
+
+        # Wait 1 ms and check pressed button to break the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 
 def get_plugin_configs(device, num_streams, num_threads):
@@ -494,29 +506,31 @@ def gui_api(gui):
     reidentification_list = []
     in_model_api = False
     deviceMode = gui.deviceMode.get()
+    precision = "INT8"
+    if deviceMode == "HETERO:CPU,GPU":
+        precision = "FP16"
+
     mask_detector = InferenceEngineNetwork(
-        configPath='models\\model-AIZOO\\FP16\\face_mask_detection.xml',
-        weightsPath='models\\model-AIZOO\\FP16\\face_mask_detection.bin',
+        configPath=f'models\\model-AIZOO\\{precision}\\face_mask_detection.xml',
+        weightsPath=f'models\\model-AIZOO\\{precision}\\face_mask_detection.bin',
         device=deviceMode,
         extension=None,
         classesPath=None)
-    detector = InferenceEngineNetwork(configPath="models\\face-detection"
-                                                 "-0200\\FP16\\face-detection-0200.xml",
-                                      weightsPath="models\\face-detection"
-                                                  "-0200\\FP16\\face-detection-0200.bin",
-                                      device=deviceMode,
-                                      extension=None,
-                                      classesPath=None)
-    reidentificator = InferenceEngineNetwork(configPath="models\\face"
-                                                        "-reidentification-retail-0095\\INT8\\face-reidentification"
-                                                        "-retail"
-                                                        "-0095.xml",
-                                             weightsPath="models\\face"
-                                                         "-reidentification-retail-0095\\INT8\\face-reidentification"
-                                                         "-retail-0095.bin",
-                                             device=deviceMode,
-                                             extension=None,
-                                             classesPath=None)
+    detector = InferenceEngineNetwork(
+        configPath=f"models\\face-detection-0200\\{precision}\\face-detection-0200.xml",
+        weightsPath=f"models\\face-detection-0200\\{precision}\\face-detection-0200.bin",
+        device=deviceMode,
+        extension=None,
+        classesPath=None)
+    reidentificator = None
+    if gui.re_identificationMode.get() == "Re-Identification On":
+        reidentificator = InferenceEngineNetwork(
+            configPath=f"models\\face-reidentification-retail-0095\\{precision}\\face-reidentification-retail-0095.xml",
+            weightsPath=f"models\\face-reidentification-retail-0095\\{precision}\\face-reidentification-retail-0095.bin",
+            device=deviceMode,
+            extension=None,
+            classesPath=None)
+
 
     if gui.inputMode.get() == "Image":
         if gui.mainMode.get() == "AIZOO":
