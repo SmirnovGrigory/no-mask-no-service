@@ -100,7 +100,7 @@ def single_class_non_max_suppression(bboxes, confidences, conf_thresh=0.2, iou_t
     """
     if len(bboxes) == 0: return []
 
-    conf_keep_idx = np.where(confidences > conf_thresh)[0]
+    conf_keep_idx = np.where(confidences > conf_thresh if conf_thresh > 0 else 0.1)[0]
 
     bboxes = bboxes[conf_keep_idx]
     confidences = confidences[conf_keep_idx]
@@ -195,7 +195,7 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
         if reid_net is not None and reid_list is not None:
             out = reid_net.detect(face_image)
             for id in reid_list:
-                if calc_features_similarity(out, id['vals']) < reid_threshold:
+                if calc_features_similarity(out, id['vals']) < reid_threshold if reid_threshold > 0 else 0.1:
                     break
             else:
                 reid_list.append({'pred':prediction, 'vals':out})

@@ -5,12 +5,10 @@ import logging as log
 import time
 import pathlib
 import tkinter as tk
-
 import imageio
 from openvino.inference_engine import IECore
 from postprocessing import post_processing, calc_features_similarity
 from iedetector import InferenceEngineNetwork, check_bounds
-
 from PIL import Image, ImageTk
 
 sys.path.append(
@@ -28,7 +26,7 @@ def sign_case(case):
         return -1
 
 
-def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9, draw_result=False, resolution_net=None,
+def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9, draw_result=False,
                     mask_net=None,
                     reid_list=None, reid_net=None):
     label_map = None
@@ -55,14 +53,14 @@ def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9,
         detection[6] = check_bounds(detection.y_max, max=height)
 
         # If score more than threshold, draw rectangle on the frame
-        if score > threshold:
+        if score > threshold if threshold > 0 else 0.1:
             face_image = frame[int(detection[4]):int(detection[6]),
                          int(detection[3]):int(detection[5])]
 
             if reid_net is not None and reid_list is not None:
                 out = reid_net.detect(face_image)
                 for id in reid_list:
-                    if calc_features_similarity(out, id) < reid_threshold:
+                    if calc_features_similarity(out, id) < reid_threshold if reid_threshold > 0 else 0.1:
                         break
                 else:
                     reid_list.append(out)
@@ -94,7 +92,7 @@ def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9,
 
 def draw_detections_with_postprocessing(frame, detections, labels, threshold, *, draw_result=False, reid_list=None,
                                         reid_net=None, reid_threshold=0.6,
-                                        resolution_net=None, mask_net=None):
+                                        mask_net=None):
     label_map = None
     if labels:
         with open(labels, 'r') as f:
@@ -130,14 +128,14 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
         detection[6] = check_bounds(y_max, max=height)
 
         # If score more than threshold, draw rectangle on the frame
-        if score > threshold:
+        if score > threshold if threshold > 0 else 0.1:
             face_image = frame[int(detection[4]):int(detection[6]),
                          int(detection[3]):int(detection[5])]
 
             if mask_net is None and reid_net is not None and reid_list is not None:
                 out = reid_net.detect(face_image)
                 for id in reid_list:
-                    if calc_features_similarity(out, id) < reid_threshold:
+                    if calc_features_similarity(out, id) < reid_threshold if reid_threshold > 0 else 0.1:
                         break
                 else:
                     reid_list.append(out)
@@ -145,10 +143,6 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
                 reid_list.append(detection)
             elif mask_net is None:
                 reid_list = [detection]
-
-            if resolution_net is not None:
-                frame = next(iter(resolution_net.expand_resolution(frame, frame).values()))[0]
-                frame = frame.transpose((1, 2, 0))
 
             pred = None
             if mask_net is not None:
