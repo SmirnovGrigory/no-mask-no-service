@@ -199,7 +199,7 @@ class Gui:
         self.startButton = tk.Button(self.sliderFrame, bg="red", fg="#000", text="Start")
         self.startButton.bind('<1>', self.validate_fields)
 
-        self.my_label = tk.Label(self.root)
+        self.my_label = tk.Label(self.root, bg='#C4C4C4', fg='#645F5F')
         self.my_label.place(x=120, y=80)
         # self.my_label.pack()
         # thread = threading.Thread(target=self.stream, args=(self.my_label, input_cap))
