@@ -169,7 +169,7 @@ class Gui:
                                        values=[
                                            "CPU",
                                            "GPU",
-                                           "HETERO"])
+                                           "HETERO:CPU,GPU"])
         self.deviceMode.set("CPU")
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')

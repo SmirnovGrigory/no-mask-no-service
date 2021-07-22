@@ -293,18 +293,6 @@ def single_image_processing(detector, image_path, gui=None,
 #         if cv2.waitKey(1) & 0xFF == ord('q'):
 #             break
 
-def fun(gui, image):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
-    gui.current_image = Image.fromarray(image)  # convert image for PIL
-    resized = gui.current_image.resize((550, 350))
-
-    frame_image = ImageTk.PhotoImage(resized)
-    gui.my_label.config(image=frame_image)
-    # gui.my_label.image = frame_image
-    gui.my_label.place(x=120, y=80)
-    gui.root.after(5000, fun(gui, image))
-
-
 def video_processing(detector, input_cap=None, gui=None,
                      in_model_api=False,
                      write_me=False,
@@ -524,21 +512,54 @@ def gui_api(gui):
                                              classesPath=None)
 
     if gui.inputMode.get() == "Image":
-        single_image_processing(mask_detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                                reid_list=reidentification_list, resolution='None',
-                                resolution_net=None, mask_net=None,
-                                reid_net=reidentificator)
+        if gui.mainMode.get() == "AIZOO":
+            single_image_processing(mask_detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector":
+            single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector + AIZOO":
+            single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=mask_detector,
+                             reid_net=reidentificator)
 
     elif gui.inputMode.get() == "Video":
-        gui.vs = open_images_capture(gui.videoPathEntry.get(), True)
-        video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                         reid_list=reidentification_list, resolution='None',
-                         resolution_net=None, mask_net=None,
-                         reid_net=reidentificator)
+        if gui.mainMode.get() == "AIZOO":
+            video_processing(mask_detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector":
+            video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector + AIZOO":
+            video_processing(detector, input_cap=gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=mask_detector,
+                             reid_net=reidentificator)
     elif gui.inputMode.get() == "Web camera":
-        gui.vs = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        if not gui.vs.isOpened():
-            raise IOError("Cannot open webcam")
+        if gui.mainMode.get() == "AIZOO":
+            video_processing(mask_detector, gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector":
+            video_processing(detector, gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=None,
+                             reid_net=reidentificator)
+        elif gui.mainMode.get() == "Face Detector + AIZOO":
+            video_processing(detector, gui=gui, in_model_api=in_model_api,
+                             reid_list=reidentification_list, resolution='None',
+                             resolution_net=None, mask_net=mask_detector,
+                             reid_net=reidentificator)
     else:
         raise Exception('unknown input format')
 
