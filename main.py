@@ -28,7 +28,8 @@ def sign_case(case):
         return -1
 
 
-def draw_detections(frame, detections, labels, threshold, *, draw_result=False, resolution_net=None, mask_net=None,
+def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9, draw_result=False, resolution_net=None,
+                    mask_net=None,
                     reid_list=None, reid_net=None):
     label_map = None
     if labels:
@@ -61,7 +62,7 @@ def draw_detections(frame, detections, labels, threshold, *, draw_result=False, 
             if reid_net is not None and reid_list is not None:
                 out = reid_net.detect(face_image)
                 for id in reid_list:
-                    if calc_features_similarity(out, id) < 0.9:
+                    if calc_features_similarity(out, id) < reid_threshold:
                         break
                 else:
                     reid_list.append(out)
@@ -92,7 +93,7 @@ def draw_detections(frame, detections, labels, threshold, *, draw_result=False, 
 
 
 def draw_detections_with_postprocessing(frame, detections, labels, threshold, *, draw_result=False, reid_list=None,
-                                        reid_net=None,
+                                        reid_net=None, reid_threshold=0.6,
                                         resolution_net=None, mask_net=None):
     label_map = None
     if labels:
@@ -136,7 +137,7 @@ def draw_detections_with_postprocessing(frame, detections, labels, threshold, *,
             if mask_net is None and reid_net is not None and reid_list is not None:
                 out = reid_net.detect(face_image)
                 for id in reid_list:
-                    if calc_features_similarity(out, id) < 0.6:
+                    if calc_features_similarity(out, id) < reid_threshold:
                         break
                 else:
                     reid_list.append(out)
@@ -215,7 +216,7 @@ def single_image_processing(detector, image_path, gui=None,
 
         # Get detection result
         results, meta = detector.get_result(frame_id)
-        reid_list = draw_detections(image, results, None, 0.5)
+        reid_list = draw_detections(image, results, None, gui.detectorThreshold.get(), reid_threshold=gui.re_identificationThreshold.get())
     else:
         if "face_mask_detection" in detector.model or "AIZOO" in detector.model:
             y_bboxes_output, y_cls_output = detector.detect(image, aizoo=True)
@@ -299,7 +300,6 @@ def video_processing(detector, input_cap=None, gui=None,
                      resolution='None', resolution_net=None,
                      mask_net=None,
                      reid_list=None, reid_net=None):
-
     if input_cap is not None:
         cap = open_images_capture(input_cap, True)
     else:
@@ -311,17 +311,19 @@ def video_processing(detector, input_cap=None, gui=None,
     if write_me:
         output = cv2.VideoWriter('output_camera.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 15, (1280, 720))
 
-    #gui.my_label.place(x=120, y=80)
+    # gui.my_label.place(x=120, y=80)
 
-    #gui.stream(gui.my_label, 'videcam\\videcam_5.mov')
+    # gui.stream(gui.my_label, 'videcam\\videcam_5.mov')
 
     while True:
         # if gui is not None:
         #     image = next(iter(cap.iter_data()))
+        start_time = time.time()
         if input_cap is not None:
             image = cap.read()
         else:
             ret, image = cap.read()
+            image = cv2.flip(image, 1)
 
         if resolution == 'all' and resolution_net is not None:
             image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
@@ -336,7 +338,7 @@ def video_processing(detector, input_cap=None, gui=None,
 
             # Get detection result
             results, meta = detector.get_result(frame_id)
-            reid_list = draw_detections(image, results, None, 0.5)
+            reid_list = draw_detections(image, results, None, gui.detectorThreshold.get(), reid_threshold=gui.re_identificationThreshold.get())
         else:
             if "face_mask_detection" in detector.model or "AIZOO" in detector.model:
                 y_bboxes_output, y_cls_output = detector.detect(image, aizoo=True)
@@ -344,7 +346,8 @@ def video_processing(detector, input_cap=None, gui=None,
                                                    reid_net=reid_net)
             else:
                 output = detector.detect(image)
-                reid_list = draw_detections_with_postprocessing(image, output, None, 0.9, reid_list=reid_list,
+                reid_list = draw_detections_with_postprocessing(image, output, None, gui.detectorThreshold.get(),
+                                                                reid_list=reid_list,
                                                                 reid_net=reid_net, draw_result=True, mask_net=mask_net)
 
         if resolution == 'all' and resolution_net is not None:
@@ -363,6 +366,8 @@ def video_processing(detector, input_cap=None, gui=None,
             gui.my_label.image = frame_image
             gui.my_label.place(x=120, y=80)
             gui.root.update()
+
+        gui.printFps(start_time)
 
         if write_me:
             output.write(image)
@@ -386,6 +391,7 @@ def video_processing(detector, input_cap=None, gui=None,
             log.info(f"{len(reid_list)} peoples on the photo")
         else:
             log.info(f"0 peoples on the photo")
+
 
 def get_plugin_configs(device, num_streams, num_threads):
     config_user_specified = {}
@@ -489,24 +495,25 @@ def gui_api(gui):
     in_model_api = False
     deviceMode = gui.deviceMode.get()
     mask_detector = InferenceEngineNetwork(
-        configPath='models\\model-AIZOO\\face_mask_detection.xml',
-        weightsPath='models\\model-AIZOO\\face_mask_detection.bin',
+        configPath='models\\model-AIZOO\\FP16\\face_mask_detection.xml',
+        weightsPath='models\\model-AIZOO\\FP16\\face_mask_detection.bin',
         device=deviceMode,
         extension=None,
         classesPath=None)
     detector = InferenceEngineNetwork(configPath="models\\face-detection"
-                                                 "-0200\\face-detection-0200.xml",
+                                                 "-0200\\FP16\\face-detection-0200.xml",
                                       weightsPath="models\\face-detection"
-                                                  "-0200\\face-detection-0200.bin",
+                                                  "-0200\\FP16\\face-detection-0200.bin",
                                       device=deviceMode,
                                       extension=None,
                                       classesPath=None)
     reidentificator = InferenceEngineNetwork(configPath="models\\face"
-                                                        "-reidentification-retail-0095\\face-reidentification-retail"
+                                                        "-reidentification-retail-0095\\INT8\\face-reidentification"
+                                                        "-retail"
                                                         "-0095.xml",
                                              weightsPath="models\\face"
-                                                         "-reidentification-retail-0095\\face-reidentification-retail"
-                                                         "-0095.bin",
+                                                         "-reidentification-retail-0095\\INT8\\face-reidentification"
+                                                         "-retail-0095.bin",
                                              device=deviceMode,
                                              extension=None,
                                              classesPath=None)
@@ -514,19 +521,19 @@ def gui_api(gui):
     if gui.inputMode.get() == "Image":
         if gui.mainMode.get() == "AIZOO":
             single_image_processing(mask_detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
+                                    reid_list=reidentification_list, resolution='None',
+                                    resolution_net=None, mask_net=None,
+                                    reid_net=reidentificator)
         elif gui.mainMode.get() == "Face Detector":
             single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=None,
-                             reid_net=reidentificator)
+                                    reid_list=reidentification_list, resolution='None',
+                                    resolution_net=None, mask_net=None,
+                                    reid_net=reidentificator)
         elif gui.mainMode.get() == "Face Detector + AIZOO":
             single_image_processing(detector, gui.videoPathEntry.get(), gui=gui, in_model_api=in_model_api,
-                             reid_list=reidentification_list, resolution='None',
-                             resolution_net=None, mask_net=mask_detector,
-                             reid_net=reidentificator)
+                                    reid_list=reidentification_list, resolution='None',
+                                    resolution_net=None, mask_net=mask_detector,
+                                    reid_net=reidentificator)
 
     elif gui.inputMode.get() == "Video":
         if gui.mainMode.get() == "AIZOO":

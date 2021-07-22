@@ -149,7 +149,7 @@ class Gui:
                                          "Image",
                                          "Video",
                                          "Web camera"])
-        self.inputMode.set("Image")
+        self.inputMode.set("Video")
 
         self.networkLabel = tk.Label(self.sliderFrame, text='Network Mode')
         self.mainMode = ttk.Combobox(self.sliderFrame,
@@ -174,13 +174,13 @@ class Gui:
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
         self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
-        self.aizooThreshold.insert(0, '0')
+        self.aizooThreshold.insert(0, '0.6')
         self.dtrashLabel = tk.Label(self.sliderFrame, text='Face Detector threshold')
         self.detectorThreshold = tk.Entry(self.sliderFrame, width=23)
-        self.detectorThreshold.insert(0, '0')
+        self.detectorThreshold.insert(0, '0.9')
         self.rtrashLabel = tk.Label(self.sliderFrame, text='Re-Identification threshold')
         self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23)
-        self.re_identificationThreshold.insert(0, '0')
+        self.re_identificationThreshold.insert(0, '0.9')
 
         self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to input file')
         self.videoPathEntry = tk.Entry(self.sliderFrame, width=23)
@@ -288,6 +288,12 @@ class Gui:
         print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
         print_nmlabel.config(font=("Courier", 24, 'bold'))
         print_nmlabel.place(x=956, y=595)
+
+    def printFps(self, start_time):
+        print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time))) + '   '), bg='#C4C4C4',
+                               fg='#645F5F')
+        print_label.config(font=("Courier", 24, 'bold'))
+        print_label.place(x=245, y=595)
 
 
 if __name__ == "__main__":
