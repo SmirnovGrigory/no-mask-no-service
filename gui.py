@@ -1,19 +1,15 @@
-import numpy as np
 import sys
-import imageio
-
 import cv2
-import tkinter as tk, threading
+import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
-
 import logging as log
-import argparse
 import time
-
-sys.path.append('C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
-from images_capture import open_images_capture
 from main import gui_api
+
+sys.path.append(
+    'C:\\Program Files (x86)\\Intel\\openvino_2021.4.582\\deployment_tools\\open_model_zoo\\demos\\common\\python')
+from images_capture import open_images_capture
 
 
 class Gui:
@@ -136,11 +132,12 @@ class Gui:
             font=('Georgia', int(16.0), 'bold')
         )
 
-        #self.panel = tk.Label(self.root)  # initialize image panel
-        #self.panel.pack(side=tk.LEFT)
+        # self.panel = tk.Label(self.root)  # initialize image panel
+        # self.panel.pack(side=tk.LEFT)
 
         # Slider window (slider controls stage position)
-        self.sliderFrame = tk.Frame(self.root, width=150, height=400, highlightthickness=1, highlightbackground="#C4C4C4")
+        self.sliderFrame = tk.Frame(self.root, width=150, height=400, highlightthickness=1,
+                                    highlightbackground="#C4C4C4")
         self.sliderFrame.place(in_=self.root, anchor="c", relx=.855, rely=.40)
 
         print_label = tk.Label(self.root, text=(str(0)), bg='#C4C4C4',
@@ -158,10 +155,10 @@ class Gui:
 
         self.inputLabel = tk.Label(self.sliderFrame, text='Input Mode')
         self.inputMode = ttk.Combobox(self.sliderFrame,
-                                     values=[
-                                         "Image",
-                                         "Video",
-                                         "Web camera"])
+                                      values=[
+                                          "Image",
+                                          "Video",
+                                          "Web camera"])
         self.inputMode.set("Video")
 
         self.networkLabel = tk.Label(self.sliderFrame, text='Network Mode')
@@ -187,13 +184,13 @@ class Gui:
 
         self.atrashLabel = tk.Label(self.sliderFrame, text='AIZOO threshold')
         self.aizooThreshold = tk.Entry(self.sliderFrame, width=23, text='AIZOO threshold')
-        self.aizooThreshold.insert(0, '0.6')
+        self.aizooThreshold.insert(0, '0.7')
         self.dtrashLabel = tk.Label(self.sliderFrame, text='Face Detector threshold')
         self.detectorThreshold = tk.Entry(self.sliderFrame, width=23)
         self.detectorThreshold.insert(0, '0.9')
         self.rtrashLabel = tk.Label(self.sliderFrame, text='Re-Identification threshold')
         self.re_identificationThreshold = tk.Entry(self.sliderFrame, width=23)
-        self.re_identificationThreshold.insert(0, '0.9')
+        self.re_identificationThreshold.insert(0, '0.4')
 
         self.videoPathLabel = tk.Label(self.sliderFrame, text='Full Path to input file')
         self.videoPathEntry = tk.Entry(self.sliderFrame, width=23)
@@ -203,12 +200,12 @@ class Gui:
         self.startButton.bind('<1>', self.validate_fields)
 
         self.my_label = tk.Label(self.root)
-        #self.my_label.pack()
+        # self.my_label.pack()
         # thread = threading.Thread(target=self.stream, args=(self.my_label, input_cap))
         # thread.daemon = 1
         # thread.start()
 
-        #self.startButton.bind('<ButtonRelease-1>', self.stream("videcam//videcam_6.mov"))
+        # self.startButton.bind('<ButtonRelease-1>', self.stream("videcam//videcam_6.mov"))
 
         self.root.resizable(False, False)
 
@@ -232,44 +229,44 @@ class Gui:
         self.videoPathEntry.pack()
 
         self.startButton.pack()
-        
-    def validate_fields(self, event):
+
+    def validate_fields(self, _):
         if self.mainMode.get() == "" or self.deviceMode.get() == "" \
-            or self.re_identificationMode.get() == "" or self.aizooThreshold.get() == "" \
-            or self.detectorThreshold.get() == "" or self.re_identificationThreshold.get() == "" \
-            or self.videoPathEntry.get() == "":
+                or self.re_identificationMode.get() == "" or self.aizooThreshold.get() == "" \
+                or self.detectorThreshold.get() == "" or self.re_identificationThreshold.get() == "" \
+                or self.videoPathEntry.get() == "":
             return
         else:
             gui_api(self)
 
-    def configure_and_start_processing(self):
-        # TODO
-        self.video_loop()
+    # def configure_and_start_processing(self):
+    #     # TODO
+    #     self.video_loop()
 
-    def video_loop(self):
-        """ Get frame from the video stream and show it in Tkinter """
-        start_time = time.time()  # start time of the loop
-        ok, frame = 0, 0
-        if self.camera:
-            ok, frame = self.vs.read()  # read frame from video stream
-            frame = cv2.flip(frame, 1)
-        else:
-            frame = self.vs.read()
-            ok = True
-
-        if ok:  # frame captured without any errors
-            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)  # convert colors from BGR to RGBA
-            self.current_image = Image.fromarray(cv2image)  # convert image for PIL
-            resized = self.current_image.resize((650, 420), Image.ANTIALIAS)
-            imgtk = ImageTk.PhotoImage(resized)  # convert image for tkinter
-            self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
-            #self.panel.config(image=imgtk)  # show the image
-            label1 = tk.Label(frame, image=imgtk)
-            label1.image = imgtk
-            label1.place(x=20, y=20)
-
-        print("FPS: ", 1.0 / (time.time() - start_time))
-        self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
+    # def video_loop(self):
+    #     """ Get frame from the video stream and show it in Tkinter """
+    #     start_time = time.time()  # start time of the loop
+    #     ok, frame = 0, 0
+    #     if self.camera:
+    #         ok, frame = self.vs.read()  # read frame from video stream
+    #         frame = cv2.flip(frame, 1)
+    #     else:
+    #         frame = self.vs.read()
+    #         ok = True
+    #
+    #     if ok:  # frame captured without any errors
+    #         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)  # convert colors from BGR to RGBA
+    #         self.current_image = Image.fromarray(cv2image)  # convert image for PIL
+    #         resized = self.current_image.resize((650, 420), Image.ANTIALIAS)
+    #         imgtk = ImageTk.PhotoImage(resized)  # convert image for tkinter
+    #         self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
+    #         # self.panel.config(image=imgtk)  # show the image
+    #         label1 = tk.Label(frame, image=imgtk)
+    #         label1.image = imgtk
+    #         label1.place(x=20, y=20)
+    #
+    #     print("FPS: ", 1.0 / (time.time() - start_time))
+    #     self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
 
     def destructor(self):
         """ Destroy the root object and release all resources """
@@ -279,27 +276,29 @@ class Gui:
         # self.vs.release()  # release web camera
         cv2.destroyAllWindows()  # it is not mandatory in this application
 
-    def stream(self, label, video_name):
-        video = imageio.get_reader(video_name)
-        for image in video.iter_data():
-            start_time = time.time()
-            self.current_image = Image.fromarray(image)  # convert image for PIL
-            resized = self.current_image.resize((550, 350), Image.ANTIALIAS)
-            frame_image = ImageTk.PhotoImage(resized)
-            label.config(image=frame_image)
-            label.image = frame_image
-            label.place(x=120, y=80)
-            print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time)))+ '   '), bg='#C4C4C4', fg='#645F5F')
-            print_label.config(font=("Courier", 24, 'bold'))
-            print_label.place(x=245, y=595)
-        self.root.after(30, self.stream(label, video_name))
-        
+    # def stream(self, label, video_name):
+    #     video = imageio.get_reader(video_name)
+    #     for image in video.iter_data():
+    #         start_time = time.time()
+    #         self.current_image = Image.fromarray(image)  # convert image for PIL
+    #         resized = self.current_image.resize((550, 350), Image.ANTIALIAS)
+    #         frame_image = ImageTk.PhotoImage(resized)
+    #         label.config(image=frame_image)
+    #         label.image = frame_image
+    #         label.place(x=120, y=80)
+    #         print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time)))+ '   '),
+    #             bg='#C4C4C4', fg='#645F5F')
+    #         print_label.config(font=("Courier", 24, 'bold'))
+    #         print_label.place(x=245, y=595)
+    #     self.root.after(30, self.stream(label, video_name))
+
     def printMaskCounter(self, masks_counter, no_masks_counter):
         self.root.children['maskLabel'].config(text=(str(masks_counter)))
         self.root.children['noMaskLabel'].config(text=(str(no_masks_counter)))
 
     def printFps(self, start_time):
         self.root.children['fpsLabel'].config(text=(str(round(1.0 / (time.time() - start_time))) + '   '))
+
 
 if __name__ == "__main__":
     pba = Gui()
