@@ -136,8 +136,8 @@ class Gui:
             font=('Georgia', int(16.0), 'bold')
         )
 
-        self.panel = tk.Label(self.root)  # initialize image panel
-        self.panel.pack(side=tk.LEFT)
+        #self.panel = tk.Label(self.root)  # initialize image panel
+        #self.panel.pack(side=tk.LEFT)
 
         # Slider window (slider controls stage position)
         self.sliderFrame = tk.Frame(self.root, width=600, height=150, highlightthickness=1, highlightbackground="#C4C4C4")
@@ -190,7 +190,7 @@ class Gui:
         self.startButton.bind('<1>', self.validate_fields)
 
         self.my_label = tk.Label(self.root)
-        self.my_label.pack()
+        #self.my_label.pack()
         # thread = threading.Thread(target=self.stream, args=(self.my_label, input_cap))
         # thread.daemon = 1
         # thread.start()
@@ -282,13 +282,13 @@ class Gui:
         self.root.after(30, self.stream(label, video_name))
         
     def printMaskCounter(self, masks_counter, no_masks_counter):
-        print_mlabel = tk.Label(self.root, text=(str(masks_counter)+ '   '), bg='#C4C4C4', fg='#645F5F')
+        print_mlabel = tk.Label(self.root, text=(str(masks_counter)), bg='#C4C4C4', fg='#645F5F')
         print_mlabel.config(font=("Courier", 24, 'bold'))
-        print_mlabel.place(x=631, y=595)
-        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)+ ' '), bg='#C4C4C4', fg='#645F5F')
+        print_mlabel.place(x=551, y=595)
+        print_nmlabel = tk.Label(self.root, text=(str(no_masks_counter)), bg='#C4C4C4', fg='#645F5F')
         print_nmlabel.config(font=("Courier", 24, 'bold'))
-        print_nmlabel.place(x=956, y=595)
-        self.root.update()
+        print_nmlabel.place(x=856, y=595)
+        #self.root.update()
 
     def printFps(self, start_time):
         print_label = tk.Label(self.root, text=(str(round(1.0 / (time.time() - start_time))) + '   '), bg='#C4C4C4',
