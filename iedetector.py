@@ -3,11 +3,11 @@ import numpy as np
 from openvino.inference_engine import IECore
 
 
-def check_bounds(n, min=0, max=None):
-    if n < min:
-        return min
-    elif max is not None and n > max:
-        return max
+def check_bounds(n, min_val=0, max_val=None):
+    if n < min_val:
+        return min_val
+    elif max_val is not None and n > max_val:
+        return max_val
     else:
         return n
 
@@ -50,7 +50,7 @@ class InferenceEngineNetwork:
     def detect(self, image, aizoo=False):
         # Add code for image classification using Inference Engine
         input_blob = next(iter(self.net.input_info))
-        out_blob = next(iter(self.net.outputs))
+        # out_blob = next(iter(self.net.outputs))
 
         n, c, h, w = self.net.input_info[input_blob].input_data.shape
 
@@ -58,7 +58,7 @@ class InferenceEngineNetwork:
         output = self.exec_net.infer(inputs={input_blob: image})
 
         if aizoo:
-            return (output['loc_branch_concat'], output['cls_branch_concat'])
+            return output['loc_branch_concat'], output['cls_branch_concat']
         else:
             return output
 
@@ -69,6 +69,6 @@ class InferenceEngineNetwork:
 
         image = self._prepare_image(image, h, w, interpolation=cv2.INTER_CUBIC)
         inter_image = self._prepare_image(inter_image, h1, w1)
-        output = self.exec_net.infer(inputs={"0": image, "1":inter_image})
+        output = self.exec_net.infer(inputs={"0": image, "1": inter_image})
 
         return output

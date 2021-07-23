@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-import logging as log
 from scipy.spatial.distance import cosine as cosine_distance
+
 
 def calc_features_similarity(feature1, feature2):
     d = cosine_distance(list(feature1.values()), list(feature2.values()))
@@ -55,7 +55,7 @@ def generate_anchors(feature_map_sizes, anchor_sizes, anchor_ratios, offset=0.5)
     return anchor_bboxes
 
 
-def decode_bbox(anchors, raw_outputs, variances=[0.1, 0.1, 0.2, 0.2]):
+def decode_bbox(anchors, raw_outputs, variances=(0.1, 0.1, 0.2, 0.2)):
     """
     Decode the actual bbox according to the anchors.
     the anchor value order is:[xmin,ymin, xmax, ymax]
@@ -69,7 +69,7 @@ def decode_bbox(anchors, raw_outputs, variances=[0.1, 0.1, 0.2, 0.2]):
     anchors_w = anchors[:, :, 2:3] - anchors[:, :, 0:1]
     anchors_h = anchors[:, :, 3:] - anchors[:, :, 1:2]
 
-    #log.info(raw_outputs)
+    # log.info(raw_outputs)
     raw_outputs_rescale = raw_outputs * np.array(variances)
     predict_center_x = raw_outputs_rescale[:, :, 0:1] * anchors_w + anchor_centers_x
     predict_center_y = raw_outputs_rescale[:, :, 1:2] * anchors_h + anchor_centers_y
@@ -98,9 +98,10 @@ def single_class_non_max_suppression(bboxes, confidences, conf_thresh=0.2, iou_t
     :param keep_top_k:
     :return:
     """
-    if len(bboxes) == 0: return []
+    if len(bboxes) == 0:
+        return []
 
-    conf_keep_idx = np.where(confidences > conf_thresh)[0]
+    conf_keep_idx = np.where(confidences > conf_thresh if conf_thresh > 0 else 0.1)[0]
 
     bboxes = bboxes[conf_keep_idx]
     confidences = confidences[conf_keep_idx]
@@ -157,7 +158,8 @@ colors = ((0, 255, 0), (255, 0, 0))
 
 
 def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, iou_thresh=0.4, draw_result=True,
-                    just_pred=False, reid_net=None, reid_list=None):
+                    just_pred=False, reid_net=None, reid_list=None, reid_threshold=0.5):
+
     height, width, _ = image.shape
     y_bboxes = decode_bbox(anchors_exp, y_bboxes_output)[0]
     y_cls = y_cls_output[0]
@@ -170,9 +172,7 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
                                                  iou_thresh=iou_thresh)
     # keep_idxs  = cv2.dnn.NMSBoxes(y_bboxes.tolist(), bbox_max_scores.tolist(), conf_thresh, iou_thresh)[:,0]
     tl = round(0.002 * (height + width) * 0.5) + 1  # line thickness
-    count_mask = 0
-    count_no_mask = 0
-    best_pred = {'score':0, 'pred':'NoMask'}
+    best_pred = {'score': 0, 'pred': 'NoMask'}
     for idx in keep_idxs:
         conf = float(bbox_max_scores[idx])
         class_id = bbox_max_score_classes[idx]
@@ -190,29 +190,37 @@ def post_processing(image, y_bboxes_output, y_cls_output, *, conf_thresh=0.5, io
         ymax = min(int(bbox[3] * height), height)
 
         face_image = image[int(ymin):int(ymax),
-                     int(xmin):int(xmax)]
+                           int(xmin):int(xmax)]
+
+        # cv2.imshow("face", face_image)
+        # cv2.waitKey(1)
 
         if reid_net is not None and reid_list is not None:
             out = reid_net.detect(face_image)
-            for id in reid_list:
-                if calc_features_similarity(out, id['vals']) < 0.99:
+            for old_note in reid_list:
+                if calc_features_similarity(out, old_note['vals']) > reid_threshold if \
+                        reid_threshold > 0 else 0.1 and prediction == old_note['pred']:
                     break
             else:
-                reid_list.append({'pred':prediction, 'vals':out})
+                reid_list.append({'pred': prediction, 'vals': out})
         elif reid_list:
-            reid_list.append({'pred':prediction, 'vals':(conf, xmin, ymin, xmax, ymax)})
+            for old_note in reid_list:
+                if {'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)} == old_note:
+                    break
+            else:
+                reid_list.append({'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)})
         else:
-            reid_list = [{'pred':prediction, 'vals':(conf, xmin, ymin, xmax, ymax)}]
+            reid_list = [{'pred': prediction, 'vals': (conf, xmin, ymin, xmax, ymax)}]
 
         if draw_result:
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), colors[class_id], thickness=tl)
             cv2.putText(image, "%s: %.2f" % (prediction, conf), (xmin + 2, ymin - 2),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, colors[class_id])
     if just_pred:
-        return (best_pred, reid_list)
+        return best_pred, reid_list
     else:
-        return (image, reid_list)
-    
+        return image, reid_list
+
     # text = 'With masks: ' + str(count_mask) + '    Without masks: ' + str(count_no_mask)
     # textsize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 3)[0]
     # X = (image.shape[1] - textsize[0]) // 2

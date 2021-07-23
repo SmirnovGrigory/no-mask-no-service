@@ -1,0 +1,319 @@
+<?xml version="1.0"?>
+<mapping>
+	<map>
+		<framework name="conv2d_0" output_port_id="conv2d_0" />
+		<IR name="conv2d_0" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_0_activation" output_port_id="conv2d_0" />
+		<IR name="conv2d_0_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="maxpool2d_0" output_port_id="maxpool2d_0" />
+		<IR name="maxpool2d_0" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_1" output_port_id="conv2d_1" />
+		<IR name="conv2d_1" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_1_activation" output_port_id="conv2d_1" />
+		<IR name="conv2d_1_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="maxpool2d_1" output_port_id="maxpool2d_1" />
+		<IR name="maxpool2d_1" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_2" output_port_id="conv2d_2" />
+		<IR name="conv2d_2" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_2_activation" output_port_id="conv2d_2" />
+		<IR name="conv2d_2_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="maxpool2d_2" output_port_id="maxpool2d_2" />
+		<IR name="maxpool2d_2" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_3" output_port_id="conv2d_3" />
+		<IR name="conv2d_3" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_3_activation" output_port_id="conv2d_3" />
+		<IR name="conv2d_3_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_0_insert_conv2d" output_port_id="loc_0_insert_conv2d" />
+		<IR name="loc_0_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_0_insert_conv2d_activation" output_port_id="loc_0_insert_conv2d" />
+		<IR name="loc_0_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_0_conv" output_port_id="loc_0_conv" />
+		<IR name="loc_0_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_0_conv_permute" output_port_id="loc_0_conv_permute" />
+		<IR name="loc_0_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_0_reshape" output_port_id="loc_0_reshape" />
+		<IR name="loc_0_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="maxpool2d_3" output_port_id="maxpool2d_3" />
+		<IR name="maxpool2d_3" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_4" output_port_id="conv2d_4" />
+		<IR name="conv2d_4" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_4_activation" output_port_id="conv2d_4" />
+		<IR name="conv2d_4_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_1_insert_conv2d" output_port_id="loc_1_insert_conv2d" />
+		<IR name="loc_1_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_1_insert_conv2d_activation" output_port_id="loc_1_insert_conv2d" />
+		<IR name="loc_1_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_1_conv" output_port_id="loc_1_conv" />
+		<IR name="loc_1_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_1_conv_permute" output_port_id="loc_1_conv_permute" />
+		<IR name="loc_1_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_1_reshape" output_port_id="loc_1_reshape" />
+		<IR name="loc_1_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="maxpool2d_4" output_port_id="maxpool2d_4" />
+		<IR name="maxpool2d_4" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_5" output_port_id="conv2d_5" />
+		<IR name="conv2d_5" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_5_activation" output_port_id="conv2d_5" />
+		<IR name="conv2d_5_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_2_insert_conv2d" output_port_id="loc_2_insert_conv2d" />
+		<IR name="loc_2_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_2_insert_conv2d_activation" output_port_id="loc_2_insert_conv2d" />
+		<IR name="loc_2_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_2_conv" output_port_id="loc_2_conv" />
+		<IR name="loc_2_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_2_conv_permute" output_port_id="loc_2_conv_permute" />
+		<IR name="loc_2_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_2_reshape" output_port_id="loc_2_reshape" />
+		<IR name="loc_2_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="maxpool2d_5" output_port_id="maxpool2d_5" />
+		<IR name="maxpool2d_5" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="conv2d_6" output_port_id="conv2d_6" />
+		<IR name="conv2d_6" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_6_activation" output_port_id="conv2d_6" />
+		<IR name="conv2d_6_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_3_insert_conv2d" output_port_id="loc_3_insert_conv2d" />
+		<IR name="loc_3_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_3_insert_conv2d_activation" output_port_id="loc_3_insert_conv2d" />
+		<IR name="loc_3_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_3_conv" output_port_id="loc_3_conv" />
+		<IR name="loc_3_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_3_conv_permute" output_port_id="loc_3_conv_permute" />
+		<IR name="loc_3_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_3_reshape" output_port_id="loc_3_reshape" />
+		<IR name="loc_3_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_7" output_port_id="conv2d_7" />
+		<IR name="conv2d_7" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="conv2d_7_activation" output_port_id="conv2d_7" />
+		<IR name="conv2d_7_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_4_insert_conv2d" output_port_id="loc_4_insert_conv2d" />
+		<IR name="loc_4_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_4_insert_conv2d_activation" output_port_id="loc_4_insert_conv2d" />
+		<IR name="loc_4_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="loc_4_conv" output_port_id="loc_4_conv" />
+		<IR name="loc_4_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_4_conv_permute" output_port_id="loc_4_conv_permute" />
+		<IR name="loc_4_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_4_reshape" output_port_id="loc_4_reshape" />
+		<IR name="loc_4_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="loc_branch_concat" output_port_id="loc_branch_concat" />
+		<IR name="loc_branch_concat" output_port_id="5" />
+	</map>
+	<map>
+		<framework name="cls_0_insert_conv2d" output_port_id="cls_0_insert_conv2d" />
+		<IR name="cls_0_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_0_insert_conv2d_activation" output_port_id="cls_0_insert_conv2d" />
+		<IR name="cls_0_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_0_conv" output_port_id="cls_0_conv" />
+		<IR name="cls_0_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_0_conv_permute" output_port_id="cls_0_conv_permute" />
+		<IR name="cls_0_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_0_reshape" output_port_id="cls_0_reshape" />
+		<IR name="cls_0_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_0_activation" output_port_id="cls_0_reshape" />
+		<IR name="cls_0_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_1_insert_conv2d" output_port_id="cls_1_insert_conv2d" />
+		<IR name="cls_1_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_1_insert_conv2d_activation" output_port_id="cls_1_insert_conv2d" />
+		<IR name="cls_1_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_1_conv" output_port_id="cls_1_conv" />
+		<IR name="cls_1_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_1_conv_permute" output_port_id="cls_1_conv_permute" />
+		<IR name="cls_1_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_1_reshape" output_port_id="cls_1_reshape" />
+		<IR name="cls_1_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_1_activation" output_port_id="cls_1_reshape" />
+		<IR name="cls_1_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_2_insert_conv2d" output_port_id="cls_2_insert_conv2d" />
+		<IR name="cls_2_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_2_insert_conv2d_activation" output_port_id="cls_2_insert_conv2d" />
+		<IR name="cls_2_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_2_conv" output_port_id="cls_2_conv" />
+		<IR name="cls_2_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_2_conv_permute" output_port_id="cls_2_conv_permute" />
+		<IR name="cls_2_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_2_reshape" output_port_id="cls_2_reshape" />
+		<IR name="cls_2_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_2_activation" output_port_id="cls_2_reshape" />
+		<IR name="cls_2_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_3_insert_conv2d" output_port_id="cls_3_insert_conv2d" />
+		<IR name="cls_3_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_3_insert_conv2d_activation" output_port_id="cls_3_insert_conv2d" />
+		<IR name="cls_3_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_3_conv" output_port_id="cls_3_conv" />
+		<IR name="cls_3_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_3_conv_permute" output_port_id="cls_3_conv_permute" />
+		<IR name="cls_3_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_3_reshape" output_port_id="cls_3_reshape" />
+		<IR name="cls_3_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_3_activation" output_port_id="cls_3_reshape" />
+		<IR name="cls_3_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_4_insert_conv2d" output_port_id="cls_4_insert_conv2d" />
+		<IR name="cls_4_insert_conv2d" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_4_insert_conv2d_activation" output_port_id="cls_4_insert_conv2d" />
+		<IR name="cls_4_insert_conv2d_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_4_conv" output_port_id="cls_4_conv" />
+		<IR name="cls_4_conv" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_4_conv_permute" output_port_id="cls_4_conv_permute" />
+		<IR name="cls_4_conv_permute" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_4_reshape" output_port_id="cls_4_reshape" />
+		<IR name="cls_4_reshape" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="cls_4_activation" output_port_id="cls_4_reshape" />
+		<IR name="cls_4_activation" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="cls_branch_concat" output_port_id="cls_branch_concat" />
+		<IR name="cls_branch_concat" output_port_id="5" />
+	</map>
+</mapping>
