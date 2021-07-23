@@ -24,8 +24,10 @@ def sign_case(case):
         return -1
 
 
+
 def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9, draw_result=False,
                     mask_net=None,
+
                     reid_list=None, reid_net=None):
     label_map = None
     if labels:
@@ -92,8 +94,10 @@ def draw_detections(frame, detections, labels, threshold, *, reid_threshold=0.9,
     return reid_list
 
 
+
 def draw_detections_with_postprocessing(frame, detections, labels, threshold, *, draw_result=False, reid_list=None,
                                         reid_net=None, reid_threshold=0.6, aizoo_threshold=0.5,
+
                                         mask_net=None):
     label_map = None
     if labels:
@@ -249,9 +253,11 @@ def single_image_processing(detector, image_path, gui=None,
                     reid_net=reid_net, draw_result=True, mask_net=mask_net,
                     reid_threshold=0.5)
 
+
     if resolution == 'all' and resolution_net is not None:
         image = next(iter(resolution_net.expand_resolution(image, image).values()))[0]
         image = image.transpose((1, 2, 0))
+
 
     if gui is None:
         cv2.imshow("result", image)
@@ -349,7 +355,9 @@ def video_processing(detector, input_cap=None, gui=None,
             image = cap.read()
         else:
             ret, image = cap.read()
+
             image = cv2.flip(image, 1)
+
 
         if in_model_api:
             frame_id = 0
@@ -371,6 +379,7 @@ def video_processing(detector, input_cap=None, gui=None,
                     conf_thresh=float(gui.aizooThreshold.get()))
             else:
                 output = detector.detect(image)
+
                 reid_list = draw_detections_with_postprocessing(
                     image, output, None, float(gui.detectorThreshold.get()),
                     reid_list=reid_list,
@@ -396,6 +405,7 @@ def video_processing(detector, input_cap=None, gui=None,
             gui.my_label.image = frame_image
             gui.root.update()
             gui.printFps(start_time)
+
 
         if write_me:
             output.write(image)
@@ -494,6 +504,7 @@ def main():
         elif 'resolution' in model_name:
             resolutioner = last_created_model
 
+
     if 'cam' in args.input and '.' not in args.input:
         args.input = None
 
@@ -502,13 +513,14 @@ def main():
         single_image_processing(mask_detector, args.input, in_model_api=in_model_api,
                                 reid_list=reidentification_list, resolution='None',
                                 resolution_net=resolutioner, mask_net=None,
+
                                 reid_net=reidentificator)
     elif args.input is not None and \
             args.input.endswith(('avi', 'wmv', 'mov', 'mkv', '3gp', '264', 'mp4')) or \
             args.input is None:
         video_processing(detector, input_cap=args.input, in_model_api=in_model_api,
                          reid_list=reidentification_list, resolution='None',
-                         resolution_net=resolutioner, mask_net=None,
+                         resolution_net=resolutioner, mask_net=mask_detector,
                          reid_net=reidentificator)
     else:
         raise Exception('unknown or invalid input format')
